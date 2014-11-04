@@ -27,21 +27,18 @@ if __name__ == '__main__':
 	print args
 
 	if args.subcommand == 'generate':
-		print "ayyyyy we generating"
 		
 		cmd = 'yo'
 		flags = 'spine'
 		subprocess.call([cmd, flags])
 
 	elif args.subcommand == 'add':
-		print "ayyyyy we adding"
 		
 		cmd = 'cordova'
 		flags = 'platform add %s' % ( args.environment )
 		subprocess.call([cmd, flags])
 		
 	elif args.subcommand == 'build':
-		print "ayyyyy we building"
 
 		cmd = 'grunt'
 		flags = 'platform build'
