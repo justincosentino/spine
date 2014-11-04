@@ -2,7 +2,7 @@
 
 import argparse
 from clint.textui import colored, indent, puts
-import subprocess
+import os
 
 if __name__ == '__main__':
 
@@ -11,8 +11,8 @@ if __name__ == '__main__':
 
 	# create the parser for the "generate" command
 	parser_gen = subparsers.add_parser('generate', help='scaffold an application using the given generator')
-	parser_gen.add_argument('name', metavar='<name>', type=str, action='store', default='newSpineApp', help='the name of the new application')
-	#parser_gen.add_argument('generate', metavar='<generator>', type=str, action='store', default='spine', help='the spine generator')
+	# parser_gen.add_argument('name', metavar='<name>', type=str, action='store', default='newSpineApp', help='the name of the new application')
+	# parser_gen.add_argument('generate', metavar='<generator>', type=str, action='store', default='spine', help='the spine generator')
 
 	# create the parser for the "build" command
 	parser_build = subparsers.add_parser('build', help='build the given spine application for the specified environment(s)')
@@ -24,24 +24,18 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	print args
-
 	if args.subcommand == 'generate':
-		
-		cmd = 'yo'
-		flags = 'spine'
-		subprocess.call([cmd, flags])
+		cmd = 'yo spine'
+		res = os.system(cmd)
+		os.system('sudo npm install')
 
-	elif args.subcommand == 'add':
-		
-		cmd = 'cordova'
-		flags = 'platform add %s' % ( args.environment )
-		subprocess.call([cmd, flags])
+	elif args.subcommand == 'add':		
+		cmd = 'phonegap platform add %s' % ( args.environment )
+		os.system(cmd)
 		
 	elif args.subcommand == 'build':
+		cmd = 'grunt platform-build'
+		os.system(cmd)
 
-		cmd = 'grunt'
-		flags = 'platform build'
-		subprocess.call([cmd, flags])
-
+	# TODO: Print out some fancy ish
 
