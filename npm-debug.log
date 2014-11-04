@@ -1,0 +1,136 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '-g',
+1 verbose cli   'generator-generator' ]
+2 info using npm@2.1.6
+3 info using node@v0.10.32
+4 verbose node symlink /usr/local/bin/node
+5 silly cache add args [ 'generator-generator', null ]
+6 verbose cache add spec generator-generator
+7 silly cache add parsed spec { raw: 'generator-generator',
+7 silly cache add   scope: null,
+7 silly cache add   name: 'generator-generator',
+7 silly cache add   rawSpec: '',
+7 silly cache add   spec: '*',
+7 silly cache add   type: 'range' }
+8 verbose addNamed generator-generator@*
+9 silly addNamed semver.valid null
+10 silly addNamed semver.validRange *
+11 silly addNameRange { name: 'generator-generator', range: '*', hasData: false }
+12 verbose mapToRegistry name generator-generator
+13 verbose mapToRegistry uri https://registry.npmjs.org/generator-generator
+14 verbose addNameRange registry:https://registry.npmjs.org/generator-generator not in flight; fetching
+15 verbose request on initialization, where is /generator-generator
+16 verbose request after pass 1, where is /generator-generator
+17 verbose request url raw /generator-generator
+18 verbose request resolving registry [ 'https://registry.npmjs.org/', './generator-generator' ]
+19 verbose request after pass 2, where is https://registry.npmjs.org/generator-generator
+20 verbose request no auth needed
+21 info attempt registry request try #1 at 20:13:48
+22 verbose request id dc0e4bf7f262b4d3
+23 verbose etag "CJYH8E0NLTFV1MEPFIYGKFTCO"
+24 http request GET https://registry.npmjs.org/generator-generator
+25 http 304 https://registry.npmjs.org/generator-generator
+26 silly registry.get cb [ 304,
+26 silly registry.get   { date: 'Tue, 04 Nov 2014 01:13:48 GMT',
+26 silly registry.get     server: 'Apache',
+26 silly registry.get     via: '1.1 varnish',
+26 silly registry.get     'last-modified': 'Tue, 04 Nov 2014 01:13:48 GMT',
+26 silly registry.get     'cache-control': 'max-age=60',
+26 silly registry.get     etag: '"CJYH8E0NLTFV1MEPFIYGKFTCO"',
+26 silly registry.get     age: '0',
+26 silly registry.get     'x-served-by': 'cache-atl6223-ATL',
+26 silly registry.get     'x-cache': 'MISS',
+26 silly registry.get     'x-cache-hits': '0',
+26 silly registry.get     'x-timer': 'S1415063628.423039,VS0,VE210',
+26 silly registry.get     vary: 'Accept',
+26 silly registry.get     'content-length': '0',
+26 silly registry.get     'keep-alive': 'timeout=10, max=50',
+26 silly registry.get     connection: 'Keep-Alive' } ]
+27 verbose etag https://registry.npmjs.org/generator-generator from cache
+28 silly addNameRange number 2 { name: 'generator-generator', range: '*', hasData: true }
+29 silly addNameRange versions [ 'generator-generator',
+29 silly addNameRange   [ '0.1.0',
+29 silly addNameRange     '0.1.1',
+29 silly addNameRange     '0.2.0',
+29 silly addNameRange     '0.2.1',
+29 silly addNameRange     '0.2.2',
+29 silly addNameRange     '0.3.0',
+29 silly addNameRange     '0.4.0',
+29 silly addNameRange     '0.4.1',
+29 silly addNameRange     '0.4.2',
+29 silly addNameRange     '0.4.3',
+29 silly addNameRange     '0.4.4',
+29 silly addNameRange     '0.5.0' ] ]
+30 verbose addNamed generator-generator@0.5.0
+31 silly addNamed semver.valid 0.5.0
+32 silly addNamed semver.validRange 0.5.0
+33 silly cache afterAdd generator-generator@0.5.0
+34 verbose afterAdd /Users/callen/.npm/generator-generator/0.5.0/package/package.json not in flight; writing
+35 verbose afterAdd /Users/callen/.npm/generator-generator/0.5.0/package/package.json written
+36 silly install resolved [ { name: 'generator-generator',
+36 silly install resolved     version: '0.5.0',
+36 silly install resolved     description: 'Generator Generator for Yeoman',
+36 silly install resolved     keywords: [ 'yeoman-generator', 'generator', 'inception' ],
+36 silly install resolved     homepage: 'https://github.com/yeoman/generator-generator',
+36 silly install resolved     bugs: { url: 'https://github.com/yeoman/generator-generator/issues' },
+36 silly install resolved     author:
+36 silly install resolved      { name: 'Pascal Hartig',
+36 silly install resolved        email: 'phartig@rdrei.net',
+36 silly install resolved        url: 'http://yeoman.io' },
+36 silly install resolved     main: 'app/index.js',
+36 silly install resolved     repository:
+36 silly install resolved      { type: 'git',
+36 silly install resolved        url: 'https://github.com/yeoman/generator-generator.git' },
+36 silly install resolved     scripts: { test: 'mocha' },
+36 silly install resolved     dependencies:
+36 silly install resolved      { chalk: '^0.5.0',
+36 silly install resolved        github: '^0.2.1',
+36 silly install resolved        'npm-name': '^0.2.0',
+36 silly install resolved        superb: '^1.0.0',
+36 silly install resolved        'yeoman-generator': '^0.17.3',
+36 silly install resolved        yosay: '^0.3.0' },
+36 silly install resolved     devDependencies: { mocha: '^1.21.4', mockery: '^1.4.0' },
+36 silly install resolved     peerDependencies: { yo: '>=1.0.0' },
+36 silly install resolved     engines: { node: '>=0.10.0', npm: '>=1.2.10' },
+36 silly install resolved     licenses: [ [Object] ],
+36 silly install resolved     files: [ 'app', 'subgenerator' ],
+36 silly install resolved     _id: 'generator-generator@0.5.0',
+36 silly install resolved     _shasum: 'f9651720f2d2826fc585ab1289cdff202b69bcc4',
+36 silly install resolved     _from: 'generator-generator@*',
+36 silly install resolved     _npmVersion: '1.4.9',
+36 silly install resolved     _npmUser: { name: 'sboudrias', email: 'admin@simonboudrias.com' },
+36 silly install resolved     maintainers: [ [Object], [Object], [Object], [Object], [Object], [Object] ],
+36 silly install resolved     dist:
+36 silly install resolved      { shasum: 'f9651720f2d2826fc585ab1289cdff202b69bcc4',
+36 silly install resolved        tarball: 'http://registry.npmjs.org/generator-generator/-/generator-generator-0.5.0.tgz' },
+36 silly install resolved     directories: {},
+36 silly install resolved     _resolved: 'https://registry.npmjs.org/generator-generator/-/generator-generator-0.5.0.tgz',
+36 silly install resolved     readme: 'ERROR: No README data found!' } ]
+37 info install generator-generator@0.5.0 into /usr/local/lib
+38 info installOne generator-generator@0.5.0
+39 verbose installOne of generator-generator to /usr/local/lib not in flight; installing
+40 warn locking Error: EACCES, open '/Users/callen/.npm/_locks/generator-generator-8ebc9c18aea4906b.lock'
+40 warn locking  /Users/callen/.npm/_locks/generator-generator-8ebc9c18aea4906b.lock failed { [Error: EACCES, open '/Users/callen/.npm/_locks/generator-generator-8ebc9c18aea4906b.lock']
+40 warn locking   errno: 3,
+40 warn locking   code: 'EACCES',
+40 warn locking   path: '/Users/callen/.npm/_locks/generator-generator-8ebc9c18aea4906b.lock' }
+41 verbose stack Error: Attempt to unlock /usr/local/lib/node_modules/generator-generator, which hasn't been locked
+41 verbose stack     at unlock (/usr/local/lib/node_modules/npm/lib/utils/locker.js:66:11)
+41 verbose stack     at cb (/usr/local/lib/node_modules/npm/lib/install.js:929:5)
+41 verbose stack     at /usr/local/lib/node_modules/npm/lib/install.js:933:20
+41 verbose stack     at /usr/local/lib/node_modules/npm/lib/utils/locker.js:40:9
+41 verbose stack     at cb (/usr/local/lib/node_modules/npm/node_modules/lockfile/lockfile.js:149:38)
+41 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/lockfile/lockfile.js:177:38
+41 verbose stack     at Object.oncomplete (fs.js:107:15)
+42 verbose cwd /Users/callen/Documents/School/College/Fall 2014/CS97/spine
+43 error Darwin 14.0.0
+44 error argv "node" "/usr/local/bin/npm" "install" "-g" "generator-generator"
+45 error node v0.10.32
+46 error npm  v2.1.6
+47 error Attempt to unlock /usr/local/lib/node_modules/generator-generator, which hasn't been locked
+48 error If you need help, you may report this error at:
+48 error     <http://github.com/npm/npm/issues>
+49 verbose exit [ 1, true ]
