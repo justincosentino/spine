@@ -37,17 +37,17 @@ PhonegapGenerator.prototype.askFor = function askFor() {
   var cb = this.async();
 
   // have Yeoman greet the user.
-  console.log(this.yeoman);
+  //console.log(this.yeoman);
 
   var prompts = [
   {
     name: 'projectName',
-    message: 'fooWhat is the name of your PhoneGap project?',
+    message: 'What is the name of your Spine project?',
     default: 'Hello World'
   },
   { name: 'appPackage',
     message: 'What is your application package',
-    default: 'com.phonegap.helloworld'
+    default: 'com.spine.helloworld'
   },
 {
   type: 'checkbox',
