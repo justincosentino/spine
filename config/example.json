@@ -1,0 +1,64 @@
+/*
+
+JSON Configuration file for SPINE application generation. Used to specify 
+surveys that should be included in the application. Should be of the form:
+
+  [
+    {
+      title: '',
+      desc:  '',
+      label: '',
+      questions: []
+    },
+
+    {
+      ...
+    }
+
+  ]
+
+Questions should be an array of JSON objects. Finalized types will come soon.
+
+*/
+
+[{ 
+  title: 'Survey I',
+  desc: 'This could be the coolest, most relevant survey ever.',
+  label: '[Mental Health]',
+  questions: [ 
+              {
+                type: 'radio',
+                question: 'What is you favourite CS course?',
+                options: ['CS91','CS21','CS97']
+              }, 
+              {
+                type: 'text',
+                question: 'Is this a super cool project?'
+              },
+              {
+                type: 'range',
+                question: 'Drag the thing to do the stuff based on your feelings:'
+              }
+  ]
+},
+{ 
+  title: 'Survey II',
+  desc: 'This could be the second coolest, most relevant survey ever.',
+  label: '[Physical Health]',
+  questions: [ 
+              {
+                type: 'radio',
+                question: 'What is you favourite CS course?',
+                options: ['CS91','CS21','CS97']
+              }, 
+              {
+                type: 'text',
+                question: 'Is this a super cool project?'
+
+              },
+              {
+                type: 'range',
+                question: 'Drag the thing to do the stuff based on your feelings:',
+              }
+  ]
+}]
