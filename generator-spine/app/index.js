@@ -99,8 +99,6 @@ SpineGenerator.prototype.writeIndex = function writeIndex() {
     this.indexFile = this.appendScripts(this.indexFile, 'scripts/index.js', [
 	'scripts/index.js'
     ]);
-}
-
 };
 
 SpineGenerator.prototype.app = function app() {
