@@ -5,7 +5,7 @@
   module.controller('AppController', function($scope, $surveys) {
     $scope.doSomething = function() {
       setTimeout(function() {
-        alert('tapped');
+        alert('Soon you can use this sick new feature!');
       }, 100);
     };
   });
@@ -18,32 +18,63 @@
     $scope.items = $surveys.items; 
     
     $scope.showDetail = function(index) {
-      var selectedItem = $surveys.items[index];
+      var selectedItem = $scope.items[index];
       $surveys.selectedItem = selectedItem;
       $scope.ons.navigator.pushPage('detail.html', {title : selectedItem.title});
     };
 
     $scope.addSurvey = function() {
       setTimeout(function() {
-        console.log($scope.items);
         $scope.items = [
           { 
-              title: 'Survey 1',
+              title: 'Survey I',
               desc: 'This could be the coolest, most relevant survey ever.',
+              label: '[Mental Health]',
               questions: [ 
                           {
-
+                            type: 'radio',
+                            question: 'What is you favourite CS course?',
+                            options: ['CS91','CS21','CS97']
                           }, 
                           {
+                            type: 'text',
+                            question: 'Is this a super cool project?'
 
+                          },
+                          {
+                            type: 'range',
+                            question: 'Drag the thing to do the stuff based on your feelings:',
+                            max: 100,
+                            min: 0
+                          }
+              ]
+          },
+          { 
+              title: 'Survey II',
+              desc: 'This could be the second coolest, most relevant survey ever.',
+              label: '[Physical Health]',
+              questions: [ 
+                          {
+                            type: 'radio',
+                            question: 'What is you favourite CS course?',
+                            options: ['CS91','CS21','CS97']
                           }, 
                           {
+                            type: 'text',
+                            question: 'Is this a super cool project?'
 
+                          },
+                          {
+                            type: 'range',
+                            question: 'Drag the thing to do the stuff based on your feelings:',
+                          },
+                          {
+                            type: 'range',
+                            question: 'Drag the thing to do the stuff based on your feelings:',
                           }
               ]
           }
         ];
-        console.log($scope.items);
         $scope.$apply();
       }, 2000);
     };
@@ -59,18 +90,15 @@
   });
 })();
 
-function onSuccess(acceleration) {
-  alert('Acceleration X: ' + acceleration.x + '\n' +
-        'Acceleration Y: ' + acceleration.y + '\n' +
-        'Acceleration Z: ' + acceleration.z + '\n' +
-        'Timestamp: '      + acceleration.timestamp + '\n');
-};
+// function onSuccess(acceleration) {
+//   alert('Acceleration X: ' + acceleration.x + '\n' +
+//         'Acceleration Y: ' + acceleration.y + '\n' +
+//         'Acceleration Z: ' + acceleration.z + '\n' +
+//         'Timestamp: '      + acceleration.timestamp + '\n');
+// };
 
-function onError() {
-    alert('onError!');
-};
+// function onError() {
+//     alert('onError!');
+// };
 
-//
-
-navigator.accelerometer.getCurrentAcceleration(onSuccess, onError);
-
+// navigator.accelerometer.getCurrentAcceleration(onSuccess, onError);
