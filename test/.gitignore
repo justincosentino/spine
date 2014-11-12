@@ -1,8 +1,8 @@
 # Phonegap-cli specific #
 #########################
 platforms
-phonegap/www/**
-phonegap/.cordova/config.json
+#phonegap/www/**
+#phonegap/.cordova/config.json
 
 # Compiled source #
 ###################
