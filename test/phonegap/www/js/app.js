@@ -8,6 +8,52 @@
         alert('Soon you can use this sick new feature!');
       }, 100);
     };
+
+    document.addEventListener('deviceready', onDeviceReady, false);
+
+    function onSuccess(acceleration) {
+      if (Math.abs(acceleration.x) > 10 ||
+          Math.abs(acceleration.y) > 10 ||
+          Math.abs(acceleration.z) > 10) {
+            var newSurvey = { 
+              title: accelerometer.timestamp,
+              desc: 'This could be the coolest, most relevant survey ever.',
+              label: '[Mental Health]',
+              questions: [ 
+                          {
+                            type: 'radio',
+                            question: 'What is you favourite CS course?',
+                            options: ['CS91','CS21','CS97']
+                          }, 
+                          {
+                            type: 'text',
+                            question: 'Is this a super cool project?'
+
+                          },
+                          {
+                            type: 'range',
+                            question: 'Drag the thing to do the stuff based on your feelings:',
+                            max: 100,
+                            min: 0
+                          }
+              ]
+            };
+
+            $scope.items.push(newSurvey);
+            $scope.$apply();
+      }
+    }
+
+    function onError() {
+        alert('onError!');
+    }
+
+    var options = { frequency: 10000 }; 
+
+    function onDeviceReady() {  
+      var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+    }
+
   });
 
   module.controller('DetailController', function($scope, $surveys) {
