@@ -11,14 +11,14 @@
 
     document.addEventListener('deviceready', onDeviceReady, false);
 
-    function onSuccess(acceleration) {
-      if (Math.abs(acceleration.x) > 10 ||
-          Math.abs(acceleration.y) > 10 ||
-          Math.abs(acceleration.z) > 10) {
+    var onSuccess = function(acceleration) {
+      if (Math.abs(acceleration.x) > 1 ||
+          Math.abs(acceleration.y) > 1 ||
+          Math.abs(acceleration.z) > 1) {
             var newSurvey = { 
               title: accelerometer.timestamp,
-              desc: 'This could be the coolest, most relevant survey ever.',
-              label: '[Mental Health]',
+              desc: 'Triggered by shaking the device.',
+              label: '[General Health]',
               questions: [ 
                           {
                             type: 'radio',
@@ -32,26 +32,23 @@
                           },
                           {
                             type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                            max: 100,
-                            min: 0
+                            question: 'Drag the thing to do the stuff based on your feelings:'
                           }
               ]
             };
-
-            $scope.items.push(newSurvey);
-            $scope.$apply();
+            alert(JSON.stringify(this));
       }
-    }
+    };
+    var onS = onSuccess.bind($scope);
 
     function onError() {
         alert('onError!');
     }
 
-    var options = { frequency: 10000 }; 
+    var options = { frequency: 3000 }; 
 
     function onDeviceReady() {  
-      var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+      var watchID = navigator.accelerometer.watchAcceleration(onS, onError, options);
     }
 
   });
