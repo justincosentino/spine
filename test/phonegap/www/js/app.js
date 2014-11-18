@@ -12,11 +12,11 @@
     document.addEventListener('deviceready', onDeviceReady, false);
 
     var onSuccess = function(acceleration) {
-      if (Math.abs(acceleration.x) > 1 ||
-          Math.abs(acceleration.y) > 1 ||
-          Math.abs(acceleration.z) > 1) {
+      if (Math.abs(acceleration.x) > 10 ||
+          Math.abs(acceleration.y) > 10 ||
+          Math.abs(acceleration.z) > 10) {
             var newSurvey = { 
-              title: accelerometer.timestamp,
+              title: acceleration.timestamp,
               desc: 'Triggered by shaking the device.',
               label: '[General Health]',
               questions: [ 
@@ -36,10 +36,9 @@
                           }
               ]
             };
-            alert(JSON.stringify(this));
+            alert("WE ARE ACCELERATING WEEEEEEE");
       }
     };
-    var onS = onSuccess.bind($scope);
 
     function onError() {
         alert('onError!');
@@ -48,7 +47,8 @@
     var options = { frequency: 3000 }; 
 
     function onDeviceReady() {  
-      var watchID = navigator.accelerometer.watchAcceleration(onS, onError, options);
+      console.log(navigator.accelerometer);
+      var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
     }
 
   });
