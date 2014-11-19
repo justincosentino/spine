@@ -44,16 +44,7 @@
               if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
                   Math.abs(acceleration.y) < currentSurvey.trigger.threshold  ||
                   Math.abs(acceleration.z) < currentSurvey.trigger.threshold) {
-
-                console.log(currentSurvey.trigger.times !== 'unlimited' && currentSurvey.trigger.times > 0);
-
-                if (currentSurvey.trigger.times == 'unlimited') {
-                  $surveys.sendSurvey(currentSurvey);
-                }
-                else if (currentSurvey.trigger.times > 0) {
-                  currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
-                  $surveys.sendSurvey(currentSurvey);
-                } 
+                $surveys.sendSurvey(currentSurvey);
               }
 
               break;
@@ -62,16 +53,7 @@
               if (Math.abs(acceleration.x) > currentSurvey.trigger.threshold  ||
                   Math.abs(acceleration.y) > currentSurvey.trigger.threshold  ||
                   Math.abs(acceleration.z) > currentSurvey.trigger.threshold) {
-                
-                console.log(currentSurvey.trigger.times !== 'unlimited' && currentSurvey.trigger.times > 0);
-                if (currentSurvey.trigger.times == 'unlimited') {
-                  $surveys.sendSurvey(currentSurvey);
-                }
-                else if (currentSurvey.trigger.times > 0) {
-                  currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
-                  $surveys.sendSurvey(currentSurvey);
-                } 
-
+                $surveys.sendSurvey(currentSurvey);
               }
 
               break;
@@ -90,7 +72,7 @@
         alert('onError!');
     }
 
-    var options = { frequency: 3000 }; 
+    var options = { frequency: 500 }; 
                     
     var bluetoothSuccess = function(error){
         alert('in success');
@@ -139,7 +121,13 @@
       var surveys = {};
 
       surveys.sendSurvey = function (currentSurvey) {
-        surveys.toDisplay.push(currentSurvey);
+        if (currentSurvey.trigger.times == 'unlimited') {
+          surveys.toDisplay.push(currentSurvey);
+        }
+        else if (currentSurvey.trigger.times > 0) {
+          currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+          surveys.toDisplay.push(currentSurvey);
+        }  
       }
 
       // Surveys that have been loaded by the application. This info will be 
