@@ -1,13 +1,20 @@
 (function(){
   'use strict';
+
+  /* ----------------------------------------------------------------------- */
+
   var module = angular.module('app', ['onsen']);
+  
+  /* ----------------------------------------------------------------------- */
 
   module.controller('DetailController', function($scope, $surveys) {
     $scope.item = $surveys.selectedItem;
   });
 
+  /* ----------------------------------------------------------------------- */
+
   module.controller('MasterController', function($scope, $surveys) {
-    $scope.items = $surveys.items; 
+    $scope.items = $surveys.toDisplay; 
     
     $scope.showDetail = function(index) {
       var selectedItem = $scope.items[index];
@@ -15,107 +22,69 @@
       $scope.ons.navigator.pushPage('detail.html', {title : selectedItem.title});
     };
 
-    $scope.addSurvey = function() {
-      //alert("addding survey");
-      setTimeout(function() {
-        $scope.items = [
-          { 
-              title: 'Survey I',
-              desc: 'This could be the coolest, most relevant survey ever.',
-              label: '[Mental Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
-
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                            max: 100,
-                            min: 0
-                          }
-              ]
-          },
-          { 
-              title: 'Survey II',
-              desc: 'This could be the second coolest, most relevant survey ever.',
-              label: '[Physical Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
-
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                          }
-              ]
-          }
-        ];
-        $scope.$apply();
-      }, 2000);
-    };
-
-    $scope.addSurvey();
-
   });
 
-  module.controller('AppController', function($scope) {
-    $scope.doSomething = function() {
-      setTimeout(function() {
-        alert('Soon you can use this sick new feature!');
-      }, 100);
-    };
+  /* ----------------------------------------------------------------------- */
+
+  module.controller('AppController', function($scope, $surveys) {
+
+    $scope.items = $surveys.toDisplay;
 
     document.addEventListener('deviceready', onDeviceReady, false);
 
     var onSuccess = function(acceleration) {
-      if (Math.abs(acceleration.x) > 8 ||
-          Math.abs(acceleration.y) > 8 ||
-          Math.abs(acceleration.z) > 10) {
-            var newSurvey = { 
-              title: acceleration.timestamp,
-              desc: 'Triggered by shaking the device.',
-              label: '[General Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
 
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:'
-                          }
-              ]
-            };
-            alert(Object.keys(this));
-            //this.addSurvey(newSurvey);
-            alert("WE ARE ACCELERATING WEEEEEEE");
+      console.log(JSON.stringify(acceleration));
+
+      for (var i = 0; i < $surveys.accelerometer.length; i++) { 
+        var currentSurvey = $surveys.accelerometer[i];
+        console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        switch(currentSurvey.trigger.thresholdType) {
+          case 'max':
+              if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.y) < currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.z) < currentSurvey.trigger.threshold) {
+
+                console.log(currentSurvey.trigger.times !== 'unlimited' && currentSurvey.trigger.times > 0);
+
+                if (currentSurvey.trigger.times == 'unlimited') {
+                  $surveys.sendSurvey(currentSurvey);
+                }
+                else if (currentSurvey.trigger.times > 0) {
+                  currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+                  $surveys.sendSurvey(currentSurvey);
+                } 
+              }
+
+              break;
+              
+          case 'min':
+              if (Math.abs(acceleration.x) > currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.y) > currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.z) > currentSurvey.trigger.threshold) {
+                
+                console.log(currentSurvey.trigger.times !== 'unlimited' && currentSurvey.trigger.times > 0);
+                if (currentSurvey.trigger.times == 'unlimited') {
+                  $surveys.sendSurvey(currentSurvey);
+                }
+                else if (currentSurvey.trigger.times > 0) {
+                  currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+                  $surveys.sendSurvey(currentSurvey);
+                } 
+
+              }
+
+              break;
+
+          default:
+            console.log('Error: we should never get here');
+        }
+
+        $scope.items = $surveys.toDisplay;
+        $scope.$apply();
+
       }
     };
-    var temp = onSuccess.bind($scope);
 
     function onError() {
         alert('onError!');
@@ -124,42 +93,169 @@
     var options = { frequency: 3000 }; 
                     
     var bluetoothSuccess = function(error){
-        alert("in success");
+        alert('in success');
     }
                 
     var bluetoothError = function(error){
-        alert("in error "+error.error);
-        alert("messg: "+ error.message);
+        alert('in error '+error.error);
+        alert('messg: '+ error.message);
     }
                     
     var startScanSuccessCallback = function(success){
-        alert("2in success: "+success.status);
-        alert("success: "+Object.keys(success));
+        alert('2in success: '+success.status);
+        alert('success: '+Object.keys(success));
         for(var obj in success){
-            alert("key: "+obj+ " value: "+success[obj]);
+            alert('key: '+obj+ ' value: '+success[obj]);
         }
     }
                     
     var startScanErrorCallback = function(error){
-        alert("2in error "+error.error);
-        alert("messg: "+ error.message);
+        alert('2in error '+error.error);
+        alert('messg: '+ error.message);
     }
+    
+    $scope.doSomething = function() {
+      setTimeout(function() {
+        alert('Soon you can use this sick new feature!');
+      }, 0);
+    };
 
     function onDeviceReady() {  
-      console.log(navigator.accelerometer);
-      var watchID = navigator.accelerometer.watchAcceleration(temp, onError, options);
-      bluetoothle.initialize(bluetoothSuccess, bluetoothError);
-      bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
-      /*bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
-      bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
-      bluetoothle.read(readSuccessCallback, readErrorCallback, params);*/
+      var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+      // bluetoothle.initialize(bluetoothSuccess, bluetoothError);
+      // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
+      // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
+      // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
+      // bluetoothle.read(readSuccessCallback, readErrorCallback, params);
     }
 
   });
 
+  /* ----------------------------------------------------------------------- */
+
   module.factory('$surveys', function() {
+      
+      // Survey 'class'/object to be returned by the factory
       var surveys = {};
-      surveys.items = [];
+
+      surveys.sendSurvey = function (currentSurvey) {
+        surveys.toDisplay.push(currentSurvey);
+      }
+
+      // Surveys that have been loaded by the application. This info will be 
+      // added by the generator, but here are some placeholder surveys for now
+      surveys.loadedItems = [
+        { 
+            title: 'Survey I (Acceleration, Max, 9, 1)',
+            desc: 'This could be the coolest, most relevant survey ever.',
+            label: '[Mental Health]',
+            questions: [ 
+                        {
+                          type: 'radio',
+                          question: 'What is you favourite CS course?',
+                          options: ['CS91','CS21','CS97']
+                        }, 
+                        {
+                          type: 'text',
+                          question: 'Is this a super cool project?'
+
+                        },
+                        {
+                          type: 'range',
+                          question: 'Drag the thing to do the stuff based on your feelings:',
+                          max: 100,
+                          min: 0
+                        }
+            ],
+            trigger: {
+              type: 'acceleration',
+              thresholdType: 'max',
+              threshold: 9,
+              times: 1
+            }
+        },
+        { 
+            title: 'Survey II (Acceleration, Min, 0, 1)',
+            desc: 'This could be the second coolest, most relevant survey ever.',
+            label: '[Physical Health]',
+            questions: [ 
+                        {
+                          type: 'radio',
+                          question: 'What is you favourite CS course?',
+                          options: ['CS91','CS21','CS97']
+                        }, 
+                        {
+                          type: 'text',
+                          question: 'Is this a super cool project?'
+
+                        },
+                        {
+                          type: 'range',
+                          question: 'Drag the thing to do the stuff based on your feelings:',
+                        },
+                        {
+                          type: 'range',
+                          question: 'Drag the thing to do the stuff based on your feelings:',
+                        }
+            ],
+            trigger: {
+              type: 'acceleration',
+              thresholdType: 'min',
+              threshold: 0,
+              times: 1
+            }
+        },
+        { 
+          title: 'Survey III (Acceleration, Min, 12, Unlimited)',
+          desc: 'Triggered by shaking the device.',
+          label: '[Health Food]',
+          questions: [ 
+                      {
+                        type: 'radio',
+                        question: 'What is you favourite CS course?',
+                        options: ['CS91','CS21','CS97']
+                      }, 
+                      {
+                        type: 'text',
+                        question: 'Is this a super cool project?'
+
+                      },
+                      {
+                        type: 'range',
+                        question: 'Drag the thing to do the stuff based on your feelings:'
+                      }
+          ],
+          trigger: {
+              type: 'acceleration',
+              thresholdType: 'min',
+              threshold: 12,
+              times: 'unlimited'
+          }
+        }
+      ];
+
+      // Surveys to be displayed in the application (currently active, awaiting action)
+      surveys.toDisplay = [];
+
+      // Surveys that are triggered by the accelerometer
+      surveys.accelerometer = [];
+
+      // Surveys that should be triggered at a certain time (e.g. 12:00 pm)
+      surveys.time = [];
+
+      // Surveys that should be triggered at regular intervals
+      surveys.intervals = [];
+
+      // Read in surveys to proper arrays
+      for (var i = 0; i < surveys.loadedItems.length; i++) { 
+        var currentSurvey = surveys.loadedItems[i];
+        if (currentSurvey.trigger.type == 'acceleration') {
+          surveys.accelerometer.push(currentSurvey);
+        }
+      }
       return surveys;
   });
+
+  /* ----------------------------------------------------------------------- */
+
 })();
