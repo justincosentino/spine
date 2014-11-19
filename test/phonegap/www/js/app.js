@@ -34,11 +34,13 @@
 
     var onSuccess = function(acceleration) {
 
-      console.log(JSON.stringify(acceleration));
+      // console.log(JSON.stringify(acceleration));
 
       for (var i = 0; i < $surveys.accelerometer.length; i++) { 
         var currentSurvey = $surveys.accelerometer[i];
-        console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        
+        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        
         switch(currentSurvey.trigger.thresholdType) {
           case 'max':
               if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
@@ -67,6 +69,22 @@
 
       }
     };
+
+    var intervalTriggers = function() {
+      
+      var intervalSend = function(currentSurvey) {
+        console.log("sending the surveys");
+        $surveys.sendSurvey(currentSurvey);
+        $scope.$apply();
+      }
+
+      for (var i = 0; i < $surveys.intervals.length; i++) { 
+        var currentSurvey = $surveys.intervals[i];
+        setInterval(function() { intervalSend(currentSurvey) }, currentSurvey.trigger.interval);
+      }
+
+    }
+
 
     function onError() {
         alert('onError!');
@@ -104,6 +122,7 @@
 
     function onDeviceReady() {  
       var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+      intervalTriggers();
       // bluetoothle.initialize(bluetoothSuccess, bluetoothError);
       // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
       // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
@@ -219,6 +238,32 @@
               threshold: 12,
               times: 'unlimited'
           }
+        },
+        { 
+          title: 'Survey IV (Interval, 10000 ms, 10)',
+          desc: 'Triggered by shaking the device.',
+          label: '[Health Food]',
+          questions: [ 
+                      {
+                        type: 'radio',
+                        question: 'What is you favourite CS course?',
+                        options: ['CS91','CS21','CS97']
+                      }, 
+                      {
+                        type: 'text',
+                        question: 'Is this a super cool project?'
+
+                      },
+                      {
+                        type: 'range',
+                        question: 'Drag the thing to do the stuff based on your feelings:'
+                      }
+          ],
+          trigger: {
+              type: 'interval',
+              interval: 10000,
+              times: 10
+          }
         }
       ];
 
@@ -235,10 +280,19 @@
       surveys.intervals = [];
 
       // Read in surveys to proper arrays
-      for (var i = 0; i < surveys.loadedItems.length; i++) { 
+      for (var i = 0; i < surveys.loadedItems.length; i++) { 2
         var currentSurvey = surveys.loadedItems[i];
-        if (currentSurvey.trigger.type == 'acceleration') {
-          surveys.accelerometer.push(currentSurvey);
+        switch(currentSurvey.trigger.type) {
+          case 'acceleration':
+            surveys.accelerometer.push(currentSurvey);
+            break;
+
+          case 'interval':
+            surveys.intervals.push(currentSurvey);
+            break;
+
+          default:
+            console.log('Error: we should never get here');
         }
       }
       return surveys;
