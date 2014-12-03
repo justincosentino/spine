@@ -1,7 +1,9 @@
 (function(){
   'use strict';
   var module = angular.module('app', ['onsen']);
-
+  var survey_loader = require('survey_loader');
+  var loader = SurveyLoader();
+  console.log(loader.surveys);
   module.controller('DetailController', function($scope, $surveys) {
     $scope.item = $surveys.selectedItem;
   });
@@ -163,3 +165,22 @@
       return surveys;
   });
 })();
+
+// Check for the various File API support.
+if (window.File && window.FileReader && window.FileList && window.Blob) {
+  // Great success! All the File APIs are supported.
+} else {
+  alert('The File APIs are not fully supported in this browser.');
+}
+
+var SurveyLoader = module.exports = function() {
+
+  var reader = new FileReader();
+  
+  reader.onload = function(e) {
+      var text = reader.result;
+      this.surveys = text;
+  }
+
+  reader.readAsText('phonegap/www/surveys.json', encoding);
+};
