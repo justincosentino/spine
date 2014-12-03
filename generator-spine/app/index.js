@@ -94,15 +94,16 @@ SpineGenerator.prototype.bower = function bower() {
     this.copy('_bower.json', 'bower.json');
 };
 
-
 SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
     var self = this;
     phonegap.create({path:path.resolve('phonegap'), name: this.projectName, id: this.appPackage}, function(e) { self.log.create('Initialized PhoneGap project'); });
-    this.mkdir('app/res');
-    this.mkdir('app/images');
     extfs.copyDirSync(path.resolve('phonegap/.cordova'), path.resolve('.cordova'), function(e) {self.log.create("Copied .cordova configuration") });
-    this.template('_config.xml', 'config.xml');
+    this.template('_config.xml', 'www/config.xml');
 };
+
+SpineGenerator.prototype.gulp = function gulp() {
+	this.copy('gulpfile.js', 'phonegap/gulpfile.js');
+}	
 
 SpineGenerator.prototype.mainStylesheet = function mainStylesheet() {
     this.copy('styles/app.css', 'phonegap/www/styles/app.css');
@@ -125,9 +126,9 @@ SpineGenerator.prototype.jsLibs = function jsLibs() {
 
 SpineGenerator.prototype.surveyFile = function surveyFile() {
 	var surveyPath = this.surveyPath;
+	this.surveyData = this.readFileAsString(this.surveyPath);
 	this.template('survey_loader.js');
-	this.surveyFile = this.readFileAsString(this.surveyPath);
-	this.write('phonegap/www/surveys.json', this.surveyFile);
+	this.copy('survey_loader.js', 'phonegap/www/js/survey_loader.js');
 }
 
 SpineGenerator.prototype.app = function app() {
