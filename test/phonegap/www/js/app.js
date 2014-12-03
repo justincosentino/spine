@@ -36,7 +36,7 @@
       for (var i = 0; i < $surveys.accelerometer.length; i++) { 
         var currentSurvey = $surveys.accelerometer[i];
         
-        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.occurrences);
         
         switch(currentSurvey.trigger.thresholdType) {
           case 'max':
@@ -70,7 +70,6 @@
     var intervalTriggers = function() {
       
       var intervalSend = function(currentSurvey) {
-        console.log("sending the surveys");
         $surveys.sendSurvey(currentSurvey);
         $scope.$apply();
       }
@@ -82,6 +81,57 @@
 
     }
 
+    var timeTriggers = function() {
+
+      var intervalSend = function (currentSurvey) {
+        $surveys.sendSurvey(currentSurvey);
+        $scope.$apply();
+      }
+
+      function daily(currentSurvey) {
+        (function loop() {
+            var now = new Date();
+            console.log('=======================================================');
+            console.log("CHECKING!!!!");
+            console.log("Hours: " + now.getHours() + " Minutes: " + now.getMinutes());
+            console.log(JSON.stringify(currentSurvey.trigger));
+            console.log('=======================================================');
+            if (now.getHours() === currentSurvey.trigger.hour && 
+                now.getMinutes() === currentSurvey.trigger.minute &&
+                now.getSeconds() === currentSurvey.trigger.second) {
+                intervalSend(currentSurvey);
+            }
+            now = new Date();                  // allow for time passing
+            var delay = 60000 - (now % 60000); // exact ms to next minute interval
+            setTimeout(loop, delay);
+        })();
+      }
+
+      for (var i = 0; i < $surveys.time.length; i++) { 
+        var currentSurvey = $surveys.time[i];
+        switch(currentSurvey.trigger.interval) {
+          case 'daily':
+            daily(currentSurvey);
+            // var now = new Date();
+            // var millisTillOccur = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+            //   currentSurvey.trigger.hour, currentSurvey.trigger.minute, currentSurvey.trigger.second, 0) - now;
+            // console.log(millisTillOccur);
+            // setTimeout(function() { startIntervalSending(currentSurvey, 86400000) }, millisTillOccur);
+            break;
+
+          case 'weekly':
+            break;
+
+          case 'yearly':
+            break;
+
+          default:
+            console.log('Error: we should never get here');
+        }
+      }
+
+    }
+
 
     function onError() {
         alert('onError!');
@@ -89,42 +139,132 @@
 
     var options = { frequency: 500 }; 
                     
-    var bluetoothSuccess = function(error){
-        alert('in success');
-    }
-                
-    var bluetoothError = function(error){
-        alert('in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-                    
-    var startScanSuccessCallback = function(success){
-        alert('2in success: '+success.status);
-        alert('success: '+Object.keys(success));
-        for(var obj in success){
-            alert('key: '+obj+ ' value: '+success[obj]);
-        }
-    }
-                    
-    var startScanErrorCallback = function(error){
-        alert('2in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-    
     $scope.doSomething = function() {
       setTimeout(function() {
         alert('Soon you can use this sick new feature!');
       }, 0);
     };
 
+    
+    /***
+    ** BLUETOOTH STUFF
+    ***/
+
+    var heartrates = [];
+
+    var bluetoothSuccess = function(success){
+        alert("in initialize success");
+        bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
+    }
+                
+    var bluetoothError = function(error){
+        alert("initalization error: "+JSON.stringify(error));
+    }
+                    
+    var startScanSuccessCallback = function(success){
+        alert("scan success: "+success.status);
+        if( success['address'] ){
+            alert("found bluetooth: "+JSON.stringify(success));
+            var params = {"address": success['address']};
+            bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
+            bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
+        }
+    }
+                    
+    var startScanErrorCallback = function(error){
+        alert("in error "+error.error);
+        alert("messg: "+ error.message);
+    }
+                    
+    var stopScanErrorCallback = function(error){
+        alert("stopping error: "+JSON.stringify(error));
+    }
+                    
+    var stopScanSuccessCallback = function(error){
+        alert("stopping success: "+JSON.stringify(error));
+    }
+                    
+    var connectErrorCallback = function(error){
+        alert("connecting error: "+JSON.stringify(error));
+    }
+                    
+    var connectSuccessCallback = function(success){
+        alert("connected: "+JSON.stringify(success));
+        var params = {};
+        params['address'] = success['address'];
+        params['serviceUuids'] = [];
+        if(success['status'] == "connected"){
+            bluetoothle.discover(discoverSuccess, discoverError, params);
+        }
+    }
+
+    var discoverError = function(error){
+        alert("discover error: "+JSON.stringify(error));
+    }
+                    
+    var discoverSuccess = function(success){
+        alert("discover: "+JSON.stringify(success));
+        alert("num services: "+success["services"].length);
+        for( var i = 0; i < success["services"].length; i++ ){
+            var par = success["services"][i];
+            if( par["serviceUuid"] == "180d" ){
+                alert("heart rate");
+            }
+            //alert(JSON.stringify(par));
+            for( var j = 0; j < par["characteristics"].length; j++ ){
+                var c = par["characteristics"][j];
+                if( c["characteristicUuid"] == "2a37" ){
+                    alert("found it");
+                    var params = {};
+                    params["address"] = success["address"];
+                    params["serviceUuid"] = par["serviceUuid"];
+                    params["characteristicUuid"] = c["characteristicUuid"];
+                    params["isNotification"] = true;
+                    bluetoothle.subscribe(subscribeSuccess, subscribeError, params);
+                }
+                
+            }
+            //if( par["characteristics"]
+        }
+    }
+
+    var subscribeSuccess = function(success){
+        //alert("success: "+JSON.stringify(success));
+        var value = bluetoothle.encodedStringToBytes(success["value"]);
+        //alert("value: "+value);
+        var heartbeat = value["1"];
+        heartrates.push(heartbeat);
+        if( heartrates.length % 20 == 0 ){
+            alert(heartrates);
+        }
+
+    }
+
+    var subscribeError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+    var readSuccess = function(success){
+        alert("success: "+JSON.stringify(success));
+    }
+
+    var readError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+
+    /***
+    ** END OF BLUETOOTH STUFF
+    ***/
+
     function onDeviceReady() {  
       var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
       intervalTriggers();
-      // bluetoothle.initialize(bluetoothSuccess, bluetoothError);
-      // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
-      // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
-      // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
-      // bluetoothle.read(readSuccessCallback, readErrorCallback, params);
+      timeTriggers();
+      var params = { "request": true, "statusReceiver": false};
+      alert("bluetooth: "+JSON.stringify(bluetoothle));
+      bluetoothle.initialize(bluetoothSuccess, bluetoothError, params);
+      
     }
 
   });
@@ -137,11 +277,11 @@
       var surveys = {};
 
       surveys.sendSurvey = function (currentSurvey) {
-        if (currentSurvey.trigger.times == 'unlimited') {
+        if (currentSurvey.trigger.occurrences == 'unlimited') {
           surveys.toDisplay.push(currentSurvey);
         }
-        else if (currentSurvey.trigger.times > 0) {
-          currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+        else if (currentSurvey.trigger.occurrences > 0) {
+          currentSurvey.trigger.occurrences = currentSurvey.trigger.occurrences - 1;  
           surveys.toDisplay.push(currentSurvey);
         }  
       }
@@ -175,7 +315,7 @@
               type: 'acceleration',
               thresholdType: 'max',
               threshold: 9,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -206,7 +346,7 @@
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 0,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -233,12 +373,12 @@
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 12,
-              times: 'unlimited'
+              occurrences: 'unlimited'
           }
         },
         { 
-          title: 'Survey IV (Interval, 10000 ms, 10)',
-          desc: 'Triggered by shaking the device.',
+          title: 'Survey IV (Interval, 10000 ms, 3)',
+          desc: 'Triggered on a 10 second interval.',
           label: '[Health Food]',
           questions: [ 
                       {
@@ -259,7 +399,36 @@
           trigger: {
               type: 'interval',
               interval: 10000,
-              times: 10
+              occurrences: 3
+          }
+        },
+        { 
+          title: 'Survey V (Time, HH:MM, Daily, 3)',
+          desc: 'Triggered on a 10 second interval.',
+          label: '[Health Food]',
+          questions: [ 
+                      {
+                        type: 'radio',
+                        question: 'What is you favourite CS course?',
+                        options: ['CS91','CS21','CS97']
+                      }, 
+                      {
+                        type: 'text',
+                        question: 'Is this a super cool project?'
+
+                      },
+                      {
+                        type: 'range',
+                        question: 'Drag the thing to do the stuff based on your feelings:'
+                      }
+          ],
+          trigger: {
+              type: 'time',
+              interval: 'daily',
+              hour: 14,
+              minute: 48,
+              second: 0,
+              occurrences: 3
           }
         }
       ];
@@ -286,6 +455,10 @@
 
           case 'interval':
             surveys.intervals.push(currentSurvey);
+            break;
+
+          case 'time':
+            surveys.time.push(currentSurvey);
             break;
 
           default:
