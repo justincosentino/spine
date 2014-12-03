@@ -39,7 +39,7 @@
       for (var i = 0; i < $surveys.accelerometer.length; i++) { 
         var currentSurvey = $surveys.accelerometer[i];
         
-        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.occurrences);
         
         switch(currentSurvey.trigger.thresholdType) {
           case 'max':
@@ -73,7 +73,6 @@
     var intervalTriggers = function() {
       
       var intervalSend = function(currentSurvey) {
-        console.log("sending the surveys");
         $surveys.sendSurvey(currentSurvey);
         $scope.$apply();
       }
@@ -81,6 +80,57 @@
       for (var i = 0; i < $surveys.intervals.length; i++) { 
         var currentSurvey = $surveys.intervals[i];
         setInterval(function() { intervalSend(currentSurvey) }, currentSurvey.trigger.interval);
+      }
+
+    }
+
+    var timeTriggers = function() {
+
+      var intervalSend = function (currentSurvey) {
+        $surveys.sendSurvey(currentSurvey);
+        $scope.$apply();
+      }
+
+      function daily(currentSurvey) {
+        (function loop() {
+            var now = new Date();
+            console.log('=======================================================');
+            console.log("CHECKING!!!!");
+            console.log("Hours: " + now.getHours() + " Minutes: " + now.getMinutes());
+            console.log(JSON.stringify(currentSurvey.trigger));
+            console.log('=======================================================');
+            if (now.getHours() === currentSurvey.trigger.hour && 
+                now.getMinutes() === currentSurvey.trigger.minute &&
+                now.getSeconds() === currentSurvey.trigger.second) {
+                intervalSend(currentSurvey);
+            }
+            now = new Date();                  // allow for time passing
+            var delay = 60000 - (now % 60000); // exact ms to next minute interval
+            setTimeout(loop, delay);
+        })();
+      }
+
+      for (var i = 0; i < $surveys.time.length; i++) { 
+        var currentSurvey = $surveys.time[i];
+        switch(currentSurvey.trigger.interval) {
+          case 'daily':
+            daily(currentSurvey);
+            // var now = new Date();
+            // var millisTillOccur = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
+            //   currentSurvey.trigger.hour, currentSurvey.trigger.minute, currentSurvey.trigger.second, 0) - now;
+            // console.log(millisTillOccur);
+            // setTimeout(function() { startIntervalSending(currentSurvey, 86400000) }, millisTillOccur);
+            break;
+
+          case 'weekly':
+            break;
+
+          case 'yearly':
+            break;
+
+          default:
+            console.log('Error: we should never get here');
+        }
       }
 
     }
@@ -123,7 +173,8 @@
     function onDeviceReady() {  
       var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
       intervalTriggers();
-      // bluetoothle.initialize(bluetoothSuccess, bluetoothError);
+      timeTriggers();
+      // bluetoothle.initialize(bluetoothSuccess, bluetoothError, []);
       // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
       // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
       // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
@@ -140,11 +191,11 @@
       var surveys = {};
 
       surveys.sendSurvey = function (currentSurvey) {
-        if (currentSurvey.trigger.times == 'unlimited') {
+        if (currentSurvey.trigger.occurrences == 'unlimited') {
           surveys.toDisplay.push(currentSurvey);
         }
-        else if (currentSurvey.trigger.times > 0) {
-          currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+        else if (currentSurvey.trigger.occurrences > 0) {
+          currentSurvey.trigger.occurrences = currentSurvey.trigger.occurrences - 1;  
           surveys.toDisplay.push(currentSurvey);
         }  
       }
@@ -178,7 +229,7 @@
               type: 'acceleration',
               thresholdType: 'max',
               threshold: 9,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -209,7 +260,7 @@
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 0,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -236,12 +287,12 @@
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 12,
-              times: 'unlimited'
+              occurrences: 'unlimited'
           }
         },
         { 
-          title: 'Survey IV (Interval, 10000 ms, 10)',
-          desc: 'Triggered by shaking the device.',
+          title: 'Survey IV (Interval, 10000 ms, 3)',
+          desc: 'Triggered on a 10 second interval.',
           label: '[Health Food]',
           questions: [ 
                       {
@@ -262,7 +313,36 @@
           trigger: {
               type: 'interval',
               interval: 10000,
-              times: 10
+              occurrences: 3
+          }
+        },
+        { 
+          title: 'Survey V (Time, HH:MM, Daily, 3)',
+          desc: 'Triggered on a 10 second interval.',
+          label: '[Health Food]',
+          questions: [ 
+                      {
+                        type: 'radio',
+                        question: 'What is you favourite CS course?',
+                        options: ['CS91','CS21','CS97']
+                      }, 
+                      {
+                        type: 'text',
+                        question: 'Is this a super cool project?'
+
+                      },
+                      {
+                        type: 'range',
+                        question: 'Drag the thing to do the stuff based on your feelings:'
+                      }
+          ],
+          trigger: {
+              type: 'time',
+              interval: 'daily',
+              hour: 14,
+              minute: 48,
+              second: 0,
+              occurrences: 3
           }
         }
       ];
@@ -289,6 +369,10 @@
 
           case 'interval':
             surveys.intervals.push(currentSurvey);
+            break;
+
+          case 'time':
+            surveys.time.push(currentSurvey);
             break;
 
           default:
