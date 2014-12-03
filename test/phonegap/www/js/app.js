@@ -4,15 +4,6 @@
   /* ----------------------------------------------------------------------- */
 
   var module = angular.module('app', ['onsen']);
-<<<<<<< HEAD
-  var survey_loader = require('survey_loader');
-  var loader = SurveyLoader();
-  console.log(loader.surveys);
-=======
-  
-  /* ----------------------------------------------------------------------- */
-
->>>>>>> ead3192344e391f7443eed58a534eb2873e27c16
   module.controller('DetailController', function($scope, $surveys) {
     $scope.item = $surveys.selectedItem;
   });
