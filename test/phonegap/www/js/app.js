@@ -139,43 +139,132 @@
 
     var options = { frequency: 500 }; 
                     
-    var bluetoothSuccess = function(error){
-        alert('in success');
-    }
-                
-    var bluetoothError = function(error){
-        alert('in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-                    
-    var startScanSuccessCallback = function(success){
-        alert('2in success: '+success.status);
-        alert('success: '+Object.keys(success));
-        for(var obj in success){
-            alert('key: '+obj+ ' value: '+success[obj]);
-        }
-    }
-                    
-    var startScanErrorCallback = function(error){
-        alert('2in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-    
     $scope.doSomething = function() {
       setTimeout(function() {
         alert('Soon you can use this sick new feature!');
       }, 0);
     };
 
+    
+    /***
+    ** BLUETOOTH STUFF
+    ***/
+
+    var heartrates = [];
+
+    var bluetoothSuccess = function(success){
+        alert("in initialize success");
+        bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
+    }
+                
+    var bluetoothError = function(error){
+        alert("initalization error: "+JSON.stringify(error));
+    }
+                    
+    var startScanSuccessCallback = function(success){
+        alert("scan success: "+success.status);
+        if( success['address'] ){
+            alert("found bluetooth: "+JSON.stringify(success));
+            var params = {"address": success['address']};
+            bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
+            bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
+        }
+    }
+                    
+    var startScanErrorCallback = function(error){
+        alert("in error "+error.error);
+        alert("messg: "+ error.message);
+    }
+                    
+    var stopScanErrorCallback = function(error){
+        alert("stopping error: "+JSON.stringify(error));
+    }
+                    
+    var stopScanSuccessCallback = function(error){
+        alert("stopping success: "+JSON.stringify(error));
+    }
+                    
+    var connectErrorCallback = function(error){
+        alert("connecting error: "+JSON.stringify(error));
+    }
+                    
+    var connectSuccessCallback = function(success){
+        alert("connected: "+JSON.stringify(success));
+        var params = {};
+        params['address'] = success['address'];
+        params['serviceUuids'] = [];
+        if(success['status'] == "connected"){
+            bluetoothle.discover(discoverSuccess, discoverError, params);
+        }
+    }
+
+    var discoverError = function(error){
+        alert("discover error: "+JSON.stringify(error));
+    }
+                    
+    var discoverSuccess = function(success){
+        alert("discover: "+JSON.stringify(success));
+        alert("num services: "+success["services"].length);
+        for( var i = 0; i < success["services"].length; i++ ){
+            var par = success["services"][i];
+            if( par["serviceUuid"] == "180d" ){
+                alert("heart rate");
+            }
+            //alert(JSON.stringify(par));
+            for( var j = 0; j < par["characteristics"].length; j++ ){
+                var c = par["characteristics"][j];
+                if( c["characteristicUuid"] == "2a37" ){
+                    alert("found it");
+                    var params = {};
+                    params["address"] = success["address"];
+                    params["serviceUuid"] = par["serviceUuid"];
+                    params["characteristicUuid"] = c["characteristicUuid"];
+                    params["isNotification"] = true;
+                    bluetoothle.subscribe(subscribeSuccess, subscribeError, params);
+                }
+                
+            }
+            //if( par["characteristics"]
+        }
+    }
+
+    var subscribeSuccess = function(success){
+        //alert("success: "+JSON.stringify(success));
+        var value = bluetoothle.encodedStringToBytes(success["value"]);
+        //alert("value: "+value);
+        var heartbeat = value["1"];
+        heartrates.push(heartbeat);
+        if( heartrates.length % 20 == 0 ){
+            alert(heartrates);
+        }
+
+    }
+
+    var subscribeError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+    var readSuccess = function(success){
+        alert("success: "+JSON.stringify(success));
+    }
+
+    var readError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+
+    /***
+    ** END OF BLUETOOTH STUFF
+    ***/
+
     function onDeviceReady() {  
       var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
       intervalTriggers();
       timeTriggers();
-      // bluetoothle.initialize(bluetoothSuccess, bluetoothError, []);
-      // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
-      // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
-      // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
-      // bluetoothle.read(readSuccessCallback, readErrorCallback, params);
+      var params = { "request": true, "statusReceiver": false};
+      alert("bluetooth: "+JSON.stringify(bluetoothle));
+      bluetoothle.initialize(bluetoothSuccess, bluetoothError, params);
+      
     }
 
   });
