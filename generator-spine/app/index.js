@@ -43,7 +43,7 @@ SpineGenerator.prototype.askFor = function askFor() {
 		{
 		    name: 'iOS',
 		    value: 'ios',
-		    checked: false
+		    checked: true
 		}, 
 		{
 		    name: 'WP8',
@@ -51,6 +51,10 @@ SpineGenerator.prototype.askFor = function askFor() {
 		    checked: false
 		}
 	    ]
+	}, 
+	{
+		name: "surveyPath",
+		message: "Where is your survey file?"
 	}
     ];
     
@@ -59,6 +63,7 @@ SpineGenerator.prototype.askFor = function askFor() {
 	
 	this.projectName = answers.projectName;
 	this.appPackage = answers.appPackage;
+	this.surveyPath = answers.surveyPath;
 	
 	function hasFeature(feat) { return features.indexOf(feat) !== -1; }
 	
@@ -89,22 +94,6 @@ SpineGenerator.prototype.bower = function bower() {
     this.copy('_bower.json', 'bower.json');
 };
 
-SpineGenerator.prototype.mainStylesheet = function mainStylesheet() {
-    this.copy('main.css', 'app/styles/main.css');
-};
-
-SpineGenerator.prototype.writeIndex = function writeIndex() {
-    this.indexFile = this.readFileAsString(path.join(this.sourceRoot(), 'index.html'));
-    this.indexFile = this.engine(this.indexFile, this);
-    this.indexFile = this.appendScripts(this.indexFile, 'scripts/index.js', [
-	'scripts/index.js'
-    ]);
-};
-
-SpineGenerator.prototype.app = function app() {
-    this.write('app/index.html', this.indexFile);
-  	this.copy('index.js', 'app/scripts/index.js');
-};
 
 SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
     var self = this;
@@ -114,4 +103,36 @@ SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
     extfs.copyDirSync(path.resolve('phonegap/.cordova'), path.resolve('.cordova'), function(e) {self.log.create("Copied .cordova configuration") });
     this.template('_config.xml', 'config.xml');
 };
+
+SpineGenerator.prototype.mainStylesheet = function mainStylesheet() {
+    this.copy('styles/app.css', 'phonegap/www/styles/app.css');
+	this.copy('styles/onsen-css-components-default.css', 'phonegap/www/styles/onsen-css-components-default.css');
+	this.copy('styles/onsen-css-components.css', 'phonegap/www/styles/onsen-css-components.css');
+	this.copy('styles/onsenui.css', 'phonegap/www/styles/onsenui.css');
+	this.copy('styles/onsen-css-components-blue-basic-theme.css', 'phonegap/www/styles/onsen-css-components-blue-basic-theme.css');
+};
+
+SpineGenerator.prototype.writeIndex = function writeIndex() {
+    this.indexFile = this.readFileAsString(path.join(this.sourceRoot(), 'index.html'));
+    this.indexFile = this.engine(this.indexFile, this);
+    this.indexFile = this.appendScripts(this.indexFile, 'js/app.js', ['js/app.js']);
+    this.indexFile = this.appendScripts(this.indexFile, 'js/survey_loader.js', ['js/survey_loader.js']);
+};
+
+SpineGenerator.prototype.jsLibs = function jsLibs() {
+	extfs.copyDirSync(path.resolve(this.sourceRoot() +'/lib/'), path.resolve('phonegap/www/lib/'));
+}
+
+SpineGenerator.prototype.surveyFile = function surveyFile() {
+	var surveyPath = this.surveyPath;
+	this.template('survey_loader.js');
+	this.surveyFile = this.readFileAsString(this.surveyPath);
+	this.write('phonegap/www/surveys.json', this.surveyFile);
+}
+
+SpineGenerator.prototype.app = function app() {
+    this.write('phonegap/www/index.html', this.indexFile);
+  	this.copy('app.js', 'phonegap/www/js/app.js');
+};
+
 

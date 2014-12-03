@@ -1,40 +1,187 @@
-<!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
+<!doctype html>
+<html lang="en" ng-app="app">
+<head>
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
 
-    http://www.apache.org/licenses/LICENSE-2.0
+  <title>Health App</title>  
+  
+  <link rel="stylesheet" href="lib/onsen/css/onsenui.css">  
+  <link rel="stylesheet" href="styles/app.css"/>
+  <link rel="stylesheet" href="styles/onsen-css-components-blue-basic-theme.css">  
 
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <title><%=projectName%></title>
-        <!-- build:css(.tmp) styles/main.css -->
-        <link rel="stylesheet" href="styles/main.css">
-        <!-- endbuild -->
-    </head>
-    <body>
-        <div class="app">
-            <h1>PhoneGap</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+  <script src="lib/onsen/js/angular/angular.js"></script>    
+  <script src="lib/onsen/js/onsenui.js"></script>    
+  
+  <script src="cordova.js"></script>  
+  <script src="js/app.js"></script>  
+  <script>
+
+    ons.ready(function() {
+
+    });
+
+  </script>
+
+  <style>
+    .item {
+      padding: 10px;
+      line-height: 1;
+    }
+    .item-thum {
+      background-color: #ccc;
+      width: 50px;
+      height: 50px;
+      border-radius: 4px;
+    }
+    .item-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .item-desc {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.3;
+      margin: 4px 0 0 0;
+      padding: 0 30px 0 0;
+    }
+    .item-label {
+      font-size: 12px;
+      color: #999;
+      float: right;
+    }
+
+    .range-list {
+      text-align: center;
+    }
+
+    .range-wrapper .range {
+      margin-top: 7px;
+      width: 100%;
+    }
+
+    ons-icon {
+      opacity: 0.8;
+    }
+
+    .lower {
+      opacity: 0.2;
+    }
+
+  </style>
+</head>
+
+<body ng-controller="AppController">    
+
+  <ons-navigator>
+    <ons-page>
+      <ons-toolbar>
+        <div class="center">Surveys</div>
+      </ons-toolbar>
+
+      <ons-list ng-controller="MasterController">
+        <ons-list-item modifier="chevron" class="item" ng-repeat="item in items" ng-click="showDetail($index)">
+          <ons-row>
+            <ons-col width="60px"> 
+              <div class="item-thum"></div>
+            </ons-col>
+            <ons-col>
+              <header>
+                <span class="item-title">{{item.title}}</span>
+              </header>
+              <p class="item-desc">{{item.desc}}</p>
+            </ons-col>
+          </ons-row>                          
+        </ons-list-item>
+      </ons-list>
+    </ons-page>
+  </ons-navigator>
+
+  <!-- Detail View -->
+  <ons-template id="detail.html">
+    <ons-page ng-controller="DetailController">
+
+      <ons-toolbar>
+        <div class="left"><ons-back-button>Back</ons-back-button></div>
+        <div class="center">{{item.title}}</div>
+      </ons-toolbar>
+
+      <ons-list modifier="inset" style="margin-top: 10px">
+        <ons-list-item class="item">
+          <ons-row>
+            <ons-col width="60px"> 
+              <div class="item-thum"></div>
+            </ons-col>
+            <ons-col>
+              <header>
+                <span class="item-title">{{item.title}}</span>
+                <span class="item-label">{{item.label}}</span>
+              </header>
+              <p class="item-desc">{{item.desc}}</p>
+            </ons-col>
+          </ons-row>
+        </ons-list-item>
+
+        <ons-list-item modifier="chevron" ng-click="doSomething()">
+          <ons-icon icon="ion-chatboxes" fixed-width="true" style="color: #ccc"></ons-icon>
+          Add a note
+        </ons-list-item>
+      </ons-list>
+
+      <ons-list modifier="inset" style="margin-top: 10px">
+        <ons-list-item class="item" modifier="inset" ng-repeat="q in item.questions">
+          <header>
+            <br>
+            <span class="item-title">{{q.question}}</span>
+          </header>
+          <p class="item-desc">
+            <div ng-switch="q.type">
+              <div ng-switch-when="radio">
+                <br>
+                <ons-list>
+                  <ons-list-item modifier="tappable" ng-repeat="opt in q.options">
+                    <label class="radio-button radio-button--list-item">
+                      <input type="radio" name="a">
+                      <div class="radio-button__checkmark radio-button--list-item__checkmark"></div>
+                      {{opt}}
+                    </label>
+                  </ons-list-item>
+                </ons-list>
+                <br>
+              </div>
+
+              <div ng-switch-when="text">
+                  <ons-list>
+                    <ons-list-item>
+                      <textarea class="textarea textarea--transparent" placeholder="Message" style="width: 100%; height: 100px;"></textarea>
+                    </ons-list-item>
+                  </ons-list>
+              </div>
+
+              <div ng-switch-when="range">
+                <ons-row>
+                  <ons-col width="40px">
+                  </ons-col>
+                  <ons-col class="range-wrapper">
+                    <input type="range" value="50" class="range">
+                  </ons-col>
+                  <ons-col width="40px">
+                  </ons-col>
+                </ons-row>
+              </div>
+              <div ng-switch-default>
+                <p>Survey type not supported.</p>
+              </div>
             </div>
-        </div>
-        <script type="text/javascript" src="cordova.js"></script>
-    </body>
+          </p>
+        </ons-list-item>
+      </ons-list>
+
+      <br>
+
+    </ons-page>
+  </ons-template>
+
+</body>  
 </html>
