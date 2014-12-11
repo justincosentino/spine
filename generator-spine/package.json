@@ -4,7 +4,7 @@
   "description": "Spine project generator",
   "keywords": [
     "yeoman-generator",
-    "phonegap",
+    "cordova",
     "wp8",
     "ios",
     "android"
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "extended-fs": "~0.3.1",
-    "phonegap": "3.5.0-0.19.23",
+    "cordova": "4.1.2",
     "yeoman-generator": "^0.13.4"
   },
   "peerDependencies": {
