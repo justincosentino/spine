@@ -98,7 +98,7 @@ SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
     var self = this;
     phonegap.create({path:path.resolve('phonegap'), name: this.projectName, id: this.appPackage}, function(e) { self.log.create('Initialized PhoneGap project'); });
     extfs.copyDirSync(path.resolve('phonegap/.cordova'), path.resolve('.cordova'), function(e) {self.log.create("Copied .cordova configuration") });
-    this.template('_config.xml', 'www/config.xml');
+    this.template('_config.xml', 'www/`config.xml');
 };
 
 SpineGenerator.prototype.gulp = function gulp() {
