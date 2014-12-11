@@ -1,14 +1,32 @@
 (function(){
   'use strict';
+
+
+
+  /* ----------------------------------------------------------------------- */
+
   var module = angular.module('app', ['onsen']);
-  var loader = SurveyLoader();
-  console.log(loader.surveys);
   module.controller('DetailController', function($scope, $surveys) {
     $scope.item = $surveys.selectedItem;
   });
 
+angular.module('HealthApp.services.Cordova', [])
+
+.factory('deviceReady', function(){
+  return function(done) {
+    if (typeof window.cordova === 'object') {
+      document.addEventListener('deviceready', function () {
+        done();
+      }, false);
+    } else {
+      done();
+    }
+  };
+});
+  /* ----------------------------------------------------------------------- */
+
   module.controller('MasterController', function($scope, $surveys) {
-    $scope.items = $surveys.items; 
+    $scope.items = $surveys.toDisplay; 
     
     $scope.showDetail = function(index) {
       var selectedItem = $scope.items[index];
@@ -16,163 +34,167 @@
       $scope.ons.navigator.pushPage('detail.html', {title : selectedItem.title});
     };
 
-    $scope.addSurvey = function() {
-      //alert("addding survey");
-      setTimeout(function() {
-        $scope.items = [
-          { 
-              title: 'Survey I',
-              desc: 'This could be the coolest, most relevant survey ever.',
-              label: '[Mental Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
-
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                            max: 100,
-                            min: 0
-                          }
-              ]
-          },
-          { 
-              title: 'Survey II',
-              desc: 'This could be the second coolest, most relevant survey ever.',
-              label: '[Physical Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
-
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:',
-                          }
-              ]
-          }
-        ];
-        $scope.$apply();
-      }, 2000);
-    };
-
-    $scope.addSurvey();
-
   });
 
-  module.controller('AppController', function($scope) {
-    $scope.doSomething = function() {
-      setTimeout(function() {
-        alert('Soon you can use this sick new feature!');
-      }, 100);
-    };
+  /* ----------------------------------------------------------------------- */
+
+  module.controller('AppController', function($scope, $surveys) {
+
+    $scope.items = $surveys.toDisplay;
 
     document.addEventListener('deviceready', onDeviceReady, false);
 
     var onSuccess = function(acceleration) {
-      if (Math.abs(acceleration.x) > 8 ||
-          Math.abs(acceleration.y) > 8 ||
-          Math.abs(acceleration.z) > 10) {
-            var newSurvey = { 
-              title: acceleration.timestamp,
-              desc: 'Triggered by shaking the device.',
-              label: '[General Health]',
-              questions: [ 
-                          {
-                            type: 'radio',
-                            question: 'What is you favourite CS course?',
-                            options: ['CS91','CS21','CS97']
-                          }, 
-                          {
-                            type: 'text',
-                            question: 'Is this a super cool project?'
 
-                          },
-                          {
-                            type: 'range',
-                            question: 'Drag the thing to do the stuff based on your feelings:'
-                          }
-              ]
-            };
-            alert(Object.keys(this));
-            //this.addSurvey(newSurvey);
-            alert("WE ARE ACCELERATING WEEEEEEE");
+      // console.log(JSON.stringify(acceleration));
+
+      for (var i = 0; i < $surveys.accelerometer.length; i++) { 
+        var currentSurvey = $surveys.accelerometer[i];
+        
+        // console.log(currentSurvey.title + ' ' + currentSurvey.trigger.times);
+        
+        switch(currentSurvey.trigger.thresholdType) {
+          case 'max':
+              if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.y) < currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.z) < currentSurvey.trigger.threshold) {
+                $surveys.sendSurvey(currentSurvey);
+              }
+
+              break;
+              
+          case 'min':
+              if (Math.abs(acceleration.x) > currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.y) > currentSurvey.trigger.threshold  ||
+                  Math.abs(acceleration.z) > currentSurvey.trigger.threshold) {
+                $surveys.sendSurvey(currentSurvey);
+              }
+
+              break;
+
+          default:
+            console.log('Error: we should never get here');
+        }
+
+        $scope.items = $surveys.toDisplay;
+        $scope.$apply();
+
       }
     };
-    var temp = onSuccess.bind($scope);
+
+    var intervalTriggers = function() {
+      
+      var intervalSend = function(currentSurvey) {
+        console.log("sending the surveys");
+        $surveys.sendSurvey(currentSurvey);
+        $scope.$apply();
+      }
+
+      for (var i = 0; i < $surveys.intervals.length; i++) { 
+        var currentSurvey = $surveys.intervals[i];
+        setInterval(function() { intervalSend(currentSurvey) }, currentSurvey.trigger.interval);
+      }
+
+    }
+
 
     function onError() {
         alert('onError!');
     }
 
-    var options = { frequency: 3000 }; 
+    var options = { frequency: 500 }; 
                     
     var bluetoothSuccess = function(error){
-        alert("in success");
+        alert('in success');
     }
                 
     var bluetoothError = function(error){
-        alert("in error "+error.error);
-        alert("messg: "+ error.message);
+        alert('in error '+error.error);
+        alert('messg: '+ error.message);
     }
                     
     var startScanSuccessCallback = function(success){
-        alert("2in success: "+success.status);
-        alert("success: "+Object.keys(success));
+        alert('2in success: '+success.status);
+        alert('success: '+Object.keys(success));
         for(var obj in success){
-            alert("key: "+obj+ " value: "+success[obj]);
+            alert('key: '+obj+ ' value: '+success[obj]);
         }
     }
                     
     var startScanErrorCallback = function(error){
-        alert("2in error "+error.error);
-        alert("messg: "+ error.message);
+        alert('2in error '+error.error);
+        alert('messg: '+ error.message);
     }
+    
+    $scope.doSomething = function() {
+      setTimeout(function() {
+        alert('Soon you can use this sick new feature!');
+      }, 0);
+    };
 
     function onDeviceReady() {  
-      console.log(navigator.accelerometer);
-      var watchID = navigator.accelerometer.watchAcceleration(temp, onError, options);
-      bluetoothle.initialize(bluetoothSuccess, bluetoothError);
-      bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
-      /*bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
-      bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
-      bluetoothle.read(readSuccessCallback, readErrorCallback, params);*/
+      var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+      intervalTriggers();
+      // bluetoothle.initialize(bluetoothSuccess, bluetoothError);
+      // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
+      // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
+      // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
+      // bluetoothle.read(readSuccessCallback, readErrorCallback, params);
     }
 
   });
 
+  /* ----------------------------------------------------------------------- */
+
   module.factory('$surveys', function() {
+      
+      // Survey 'class'/object to be returned by the factory
       var surveys = {};
-      surveys.items = [];
+
+      surveys.sendSurvey = function (currentSurvey) {
+        if (currentSurvey.trigger.times == 'unlimited') {
+          surveys.toDisplay.push(currentSurvey);
+        }
+        else if (currentSurvey.trigger.times > 0) {
+          currentSurvey.trigger.times = currentSurvey.trigger.times - 1;  
+          surveys.toDisplay.push(currentSurvey);
+        }  
+      }
+
+      // Surveys that have been loaded by the application. This info will be 
+      // added by the generator, but here are some placeholder surveys for now
+      var surveyLoader = new SurveyLoader();
+
+      surveys.loadedItems = surveyLoader.get();
+
+      // Surveys to be displayed in the application (currently active, awaiting action)
+      surveys.toDisplay = [];
+
+      // Surveys that are triggered by the accelerometer
+      surveys.accelerometer = [];
+
+      // Surveys that should be triggered at a certain time (e.g. 12:00 pm)
+      surveys.time = [];
+
+      // Surveys that should be triggered at regular intervals
+      surveys.intervals = [];
+
+      // Read in surveys to proper arrays
+      for (var i = 0; i < surveys.loadedItems.length; i++) { 2
+        var currentSurvey = surveys.loadedItems[i];
+        switch(currentSurvey.trigger.type) {
+          case 'acceleration':
+            surveys.accelerometer.push(currentSurvey);
+            break;
+
+          case 'interval':
+            surveys.intervals.push(currentSurvey);
+            break;
+
+          default:
+            console.log('Error: we should never get here');
+        }
+      }
       return surveys;
   });
 })();
-
-var SurveyLoader = module.exports = function() {
-
-  var reader = new FileReader();
-  
-  reader.onload = function(e) {
-      var text = reader.result;
-      this.surveys = text;
-  }
-
-  reader.readAsText('phonegap/www/surveys.json', encoding);
-};

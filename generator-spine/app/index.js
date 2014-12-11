@@ -11,7 +11,6 @@ var extfs = require('extended-fs');
 var SpineGenerator = module.exports = function SpineGenerator (args, options, config) {
     yeoman.generators.Base.apply(this, arguments);
     this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
-    
 };
 
 util.inherits(SpineGenerator, yeoman.generators.Base);
@@ -54,7 +53,8 @@ SpineGenerator.prototype.askFor = function askFor() {
 	}, 
 	{
 		name: "surveyPath",
-		message: "Where is your survey file?"
+		message: "Where is your survey file?", 
+        default: '/Users/callen/surveys.json'
 	}
     ];
     
@@ -77,10 +77,6 @@ SpineGenerator.prototype.askFor = function askFor() {
     }.bind(this));
 };
 
-SpineGenerator.prototype.gruntfile = function gruntfile() {
-    this.template('Gruntfile.js');
-};
-
 SpineGenerator.prototype.packageJSON = function packageJSON() {
     this.template('_package.json', 'package.json');
 };
@@ -94,22 +90,28 @@ SpineGenerator.prototype.bower = function bower() {
     this.copy('_bower.json', 'bower.json');
 };
 
-
 SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
     var self = this;
-    phonegap.create({path:path.resolve('phonegap'), name: this.projectName, id: this.appPackage}, function(e) { self.log.create('Initialized PhoneGap project'); });
-    this.mkdir('app/res');
-    this.mkdir('app/images');
-    extfs.copyDirSync(path.resolve('phonegap/.cordova'), path.resolve('.cordova'), function(e) {self.log.create("Copied .cordova configuration") });
-    this.template('_config.xml', 'config.xml');
+    self.log.create("Initialized Cordova project")
+    extfs.copyDirSync(
+        path.resolve(this.sourceRoot() + '/.cordova'), 
+        path.resolve('.cordova'), 
+        function(e) {
+            self.log.create("Copied .cordova configuration") 
+        });
+    this.template('_config.xml', 'www/config.xml');
 };
 
+SpineGenerator.prototype.gulp = function gulp() {
+	this.copy('gulpfile.js', 'gulpfile.js');
+}	
+
 SpineGenerator.prototype.mainStylesheet = function mainStylesheet() {
-    this.copy('styles/app.css', 'phonegap/www/styles/app.css');
-	this.copy('styles/onsen-css-components-default.css', 'phonegap/www/styles/onsen-css-components-default.css');
-	this.copy('styles/onsen-css-components.css', 'phonegap/www/styles/onsen-css-components.css');
-	this.copy('styles/onsenui.css', 'phonegap/www/styles/onsenui.css');
-	this.copy('styles/onsen-css-components-blue-basic-theme.css', 'phonegap/www/styles/onsen-css-components-blue-basic-theme.css');
+    this.copy('styles/app.css', 'www/styles/app.css');
+	this.copy('styles/onsen-css-components-default.css', 'www/styles/onsen-css-components-default.css');
+	this.copy('styles/onsen-css-components.css', 'www/styles/onsen-css-components.css');
+	this.copy('styles/onsenui.css', 'www/styles/onsenui.css');
+	this.copy('styles/onsen-css-components-blue-basic-theme.css', 'www/styles/onsen-css-components-blue-basic-theme.css');
 };
 
 SpineGenerator.prototype.writeIndex = function writeIndex() {
@@ -120,19 +122,19 @@ SpineGenerator.prototype.writeIndex = function writeIndex() {
 };
 
 SpineGenerator.prototype.jsLibs = function jsLibs() {
-	extfs.copyDirSync(path.resolve(this.sourceRoot() +'/lib/'), path.resolve('phonegap/www/lib/'));
+	extfs.copyDirSync(path.resolve(this.sourceRoot() +'/lib/'), path.resolve('www/lib/'));
 }
 
 SpineGenerator.prototype.surveyFile = function surveyFile() {
 	var surveyPath = this.surveyPath;
+	this.surveyData = this.readFileAsString(this.surveyPath);
 	this.template('survey_loader.js');
-	this.surveyFile = this.readFileAsString(this.surveyPath);
-	this.write('phonegap/www/surveys.json', this.surveyFile);
+	this.copy('survey_loader.js', 'www/js/survey_loader.js');
 }
 
 SpineGenerator.prototype.app = function app() {
-    this.write('phonegap/www/index.html', this.indexFile);
-  	this.copy('app.js', 'phonegap/www/js/app.js');
+    this.write('www/index.html', this.indexFile);
+  	this.copy('app.js', 'www/js/app.js');
 };
 
 

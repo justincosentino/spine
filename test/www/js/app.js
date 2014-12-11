@@ -40,11 +40,12 @@
         
         switch(currentSurvey.trigger.thresholdType) {
           case 'max':
-              if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
-                  Math.abs(acceleration.y) < currentSurvey.trigger.threshold  ||
-                  Math.abs(acceleration.z) < currentSurvey.trigger.threshold) {
-                $surveys.sendSurvey(currentSurvey);
-              }
+              //if (Math.abs(acceleration.x) < currentSurvey.trigger.threshold  ||
+              //    Math.abs(acceleration.y) < currentSurvey.trigger.threshold  ||
+              //    Math.abs(acceleration.z) < currentSurvey.trigger.threshold) {
+              //  $surveys.sendSurvey(currentSurvey);
+              //}
+              $surveys.sendSurvey(currentSurvey);
 
               break;
               
@@ -139,33 +140,123 @@
 
     var options = { frequency: 500 }; 
                     
-    var bluetoothSuccess = function(error){
-        alert('in success');
-    }
-                
-    var bluetoothError = function(error){
-        alert('in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-                    
-    var startScanSuccessCallback = function(success){
-        alert('2in success: '+success.status);
-        alert('success: '+Object.keys(success));
-        for(var obj in success){
-            alert('key: '+obj+ ' value: '+success[obj]);
-        }
-    }
-                    
-    var startScanErrorCallback = function(error){
-        alert('2in error '+error.error);
-        alert('messg: '+ error.message);
-    }
-    
     $scope.doSomething = function() {
       setTimeout(function() {
         alert('Soon you can use this sick new feature!');
       }, 0);
     };
+
+    
+    /***
+    ** BLUETOOTH STUFF
+    ***/
+
+    var heartrates = [];
+
+    var bluetoothSuccess = function(success){
+        alert("in initialize success");
+        bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
+    }
+                
+    var bluetoothError = function(error){
+        alert("initalization error: "+JSON.stringify(error));
+    }
+                    
+    var startScanSuccessCallback = function(success){
+        alert("scan success: "+success.status);
+        if( success['address'] ){
+            alert("found bluetooth: "+JSON.stringify(success));
+            var params = {"address": success['address']};
+            bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
+            bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
+        }
+    }
+                    
+    var startScanErrorCallback = function(error){
+        alert("in error "+error.error);
+        alert("messg: "+ error.message);
+    }
+                    
+    var stopScanErrorCallback = function(error){
+        alert("stopping error: "+JSON.stringify(error));
+    }
+                    
+    var stopScanSuccessCallback = function(error){
+        alert("stopping success: "+JSON.stringify(error));
+    }
+                    
+    var connectErrorCallback = function(error){
+        alert("connecting error: "+JSON.stringify(error));
+    }
+                    
+    var connectSuccessCallback = function(success){
+        alert("connected: "+JSON.stringify(success));
+        var params = {};
+        params['address'] = success['address'];
+        params['serviceUuids'] = [];
+        if(success['status'] == "connected"){
+            bluetoothle.discover(discoverSuccess, discoverError, params);
+        }
+    }
+
+    var discoverError = function(error){
+        alert("discover error: "+JSON.stringify(error));
+    }
+                    
+    var discoverSuccess = function(success){
+        alert("discover: "+JSON.stringify(success));
+        alert("num services: "+success["services"].length);
+        for( var i = 0; i < success["services"].length; i++ ){
+            var par = success["services"][i];
+            if( par["serviceUuid"] == "180d" ){
+                alert("heart rate");
+            }
+            //alert(JSON.stringify(par));
+            for( var j = 0; j < par["characteristics"].length; j++ ){
+                var c = par["characteristics"][j];
+                if( c["characteristicUuid"] == "2a37" ){
+                    alert("found it");
+                    var params = {};
+                    params["address"] = success["address"];
+                    params["serviceUuid"] = par["serviceUuid"];
+                    params["characteristicUuid"] = c["characteristicUuid"];
+                    params["isNotification"] = true;
+                    bluetoothle.subscribe(subscribeSuccess, subscribeError, params);
+                }
+                
+            }
+            //if( par["characteristics"]
+        }
+    }
+
+    var subscribeSuccess = function(success){
+        //alert("success: "+JSON.stringify(success));
+        var value = bluetoothle.encodedStringToBytes(success["value"]);
+        //alert("value: "+value);
+        var heartbeat = value["1"];
+        heartrates.push(heartbeat);
+        if( heartrates.length % 20 == 0 ){
+            alert(heartrates);
+        }
+
+    }
+
+    var subscribeError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+    var readSuccess = function(success){
+        alert("success: "+JSON.stringify(success));
+    }
+
+    var readError = function(error){
+        alert("error: "+JSON.stringify(error));
+    }
+
+
+    /***
+    ** END OF BLUETOOTH STUFF
+    ***/
 
     function onDeviceReady() {
       // Watch accelerometer data when the application is open (TODO: Enable background mode?)
@@ -241,6 +332,11 @@
       // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
       // bluetoothle.connect(connectSuccessCallback, connectErrorCallback, params);
       // bluetoothle.read(readSuccessCallback, readErrorCallback, params);
+
+      var params = { "request": true, "statusReceiver": false};
+      alert("bluetooth: "+JSON.stringify(bluetoothle));
+      bluetoothle.initialize(bluetoothSuccess, bluetoothError, params);
+      
     }
 
   });
@@ -264,150 +360,9 @@
 
       // Surveys that have been loaded by the application. This info will be 
       // added by the generator, but here are some placeholder surveys for now
-      surveys.loadedItems = [
-        { 
-            title: 'Survey I (Acceleration, Max, 9, 1)',
-            desc: 'This could be the coolest, most relevant survey ever.',
-            label: '[Mental Health]',
-            questions: [ 
-                        {
-                          type: 'radio',
-                          question: 'What is you favourite CS course?',
-                          options: ['CS91','CS21','CS97']
-                        }, 
-                        {
-                          type: 'text',
-                          question: 'Is this a super cool project?'
 
-                        },
-                        {
-                          type: 'range',
-                          question: 'Drag the thing to do the stuff based on your feelings:',
-                          max: 100,
-                          min: 0
-                        }
-            ],
-            trigger: {
-              type: 'acceleration',
-              thresholdType: 'max',
-              threshold: 9,
-              occurrences: 1
-            }
-        },
-        { 
-            title: 'Survey II (Acceleration, Min, 0, 1)',
-            desc: 'This could be the second coolest, most relevant survey ever.',
-            label: '[Physical Health]',
-            questions: [ 
-                        {
-                          type: 'radio',
-                          question: 'What is you favourite CS course?',
-                          options: ['CS91','CS21','CS97']
-                        }, 
-                        {
-                          type: 'text',
-                          question: 'Is this a super cool project?'
-
-                        },
-                        {
-                          type: 'range',
-                          question: 'Drag the thing to do the stuff based on your feelings:',
-                        },
-                        {
-                          type: 'range',
-                          question: 'Drag the thing to do the stuff based on your feelings:',
-                        }
-            ],
-            trigger: {
-              type: 'acceleration',
-              thresholdType: 'min',
-              threshold: 0,
-              occurrences: 1
-            }
-        },
-        { 
-          title: 'Survey III (Acceleration, Min, 12, Unlimited)',
-          desc: 'Triggered by shaking the device.',
-          label: '[Health Food]',
-          questions: [ 
-                      {
-                        type: 'radio',
-                        question: 'What is you favourite CS course?',
-                        options: ['CS91','CS21','CS97']
-                      }, 
-                      {
-                        type: 'text',
-                        question: 'Is this a super cool project?'
-
-                      },
-                      {
-                        type: 'range',
-                        question: 'Drag the thing to do the stuff based on your feelings:'
-                      }
-          ],
-          trigger: {
-              type: 'acceleration',
-              thresholdType: 'min',
-              threshold: 12,
-              occurrences: 'unlimited'
-          }
-        },
-        { 
-          title: 'Food Survey',
-          desc: 'Please answer the below questions about your most recent meal.',
-          label: '[Health Food]',
-          questions: [ 
-                      {
-                        type: 'radio',
-                        question: 'What meal did you just eat?',
-                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
-                      }, 
-                      {
-                        type: 'text',
-                        question: 'Please describe the food that you consumed during this meal:'
-
-                      },
-                      {
-                        type: 'range',
-                        question: 'How did you feel after this meal?'
-                      }
-          ],
-          trigger: {
-              type: 'interval',
-              interval: 10000,
-              occurrences: 3
-          }
-        },
-        { 
-          title: 'Food Survey',
-          desc: 'Please answer the below questions about your most recent meal.',
-          label: '[Health Food]',
-          questions: [ 
-                      {
-                        type: 'radio',
-                        question: 'What meal did you just eat?',
-                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
-                      }, 
-                      {
-                        type: 'text',
-                        question: 'Please describe the food that you consumed during this meal:'
-
-                      },
-                      {
-                        type: 'range',
-                        question: 'How did you feel after this meal?'
-                      }
-          ],
-          trigger: {
-              type: 'time',
-              interval: 'daily',
-              hour: 14,
-              minute: 48,
-              second: 0,
-              occurrences: 3
-          }
-        }
-      ];
+      var surveyLoader = new SurveyLoader();
+      surveys.loadedItems = surveyLoader.get();
 
       // Surveys to be displayed in the application (currently active, awaiting action)
       surveys.toDisplay = [];
