@@ -167,10 +167,75 @@
       }, 0);
     };
 
-    function onDeviceReady() {  
+    function onDeviceReady() {
+      // Watch accelerometer data when the application is open (TODO: Enable background mode?)
       var watchID = navigator.accelerometer.watchAcceleration(onSuccess, onError, options);
+      
+      // Init interval triggers to run when the application is open (TODO: Enable background mode?)
       intervalTriggers();
+
+      // Init time triggers to run when the application is open (TODO: Enable background mode?)
       timeTriggers();
+
+      // Called on startup to prompt the user for Location permission if they have not done so already
+      window.navigator.geolocation.getCurrentPosition(function(location) {
+        console.log('HealthApp: initial geolocation tracking.');
+      });
+
+      var bgGeo = window.plugins.backgroundGeoLocation;
+
+      /**
+      * This would be your own callback for Ajax-requests after POSTing background geolocation to your server.
+      */
+      var yourAjaxCallback = function(response) {
+          ////
+          // IMPORTANT:  You must execute the #finish method here to inform the native plugin that you're finished,
+          //  and the background-task may be completed.  You must do this regardless if your HTTP request is successful or not.
+          // IF YOU DON'T, ios will CRASH YOUR APP for spending too much time in the background.
+          //
+          //
+          bgGeo.finish();
+      };
+
+      /**
+      * This callback will be executed every time a geolocation is recorded in the background.
+      */
+      var callbackFn = function(location) {
+          console.log('[js] BackgroundGeoLocation callback:  ' + location.latitude + ',' + location.longitude);
+          // Do your HTTP request here to POST location to your server.
+          //
+          //
+          yourAjaxCallback.call(this);
+      };
+
+      var failureFn = function(error) {
+          console.log('BackgroundGeoLocation error');
+      }
+
+      // BackgroundGeoLocation is highly configurable.
+      bgGeo.configure(callbackFn, failureFn, {
+          url: 'http://only.for.android.com/update_location.json', // <-- Android ONLY:  your server url to send locations to
+          params: {
+              auth_token: 'user_secret_auth_token',    //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
+              foo: 'bar'                              //  <-- Android ONLY:  HTTP POST params sent to your server when persisting locations.
+          },
+          headers: {                                   // <-- Android ONLY:  Optional HTTP headers sent to your configured #url when persisting locations
+              "X-Foo": "BAR"
+          },
+          desiredAccuracy: 10,
+          stationaryRadius: 20,
+          distanceFilter: 30,
+          notificationTitle: 'Background tracking', // <-- android only, customize the title of the notification
+          notificationText: 'ENABLED', // <-- android only, customize the text of the notification
+          activityType: 'AutomotiveNavigation',
+          debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
+          stopOnTerminate: false // <-- enable this to clear background location settings when the app terminates
+      });
+
+      // Turn ON the background-geolocation system.
+      bgGeo.start();
+
+
       // bluetoothle.initialize(bluetoothSuccess, bluetoothError, []);
       // bluetoothle.startScan(startScanSuccessCallback, startScanErrorCallback, []);
       // bluetoothle.stopScan(stopScanSuccessCallback, stopScanErrorCallback);
@@ -288,23 +353,23 @@
           }
         },
         { 
-          title: 'Survey IV (Interval, 10000 ms, 3)',
-          desc: 'Triggered on a 10 second interval.',
+          title: 'Food Survey',
+          desc: 'Please answer the below questions about your most recent meal.',
           label: '[Health Food]',
           questions: [ 
                       {
                         type: 'radio',
-                        question: 'What is you favourite CS course?',
-                        options: ['CS91','CS21','CS97']
+                        question: 'What meal did you just eat?',
+                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
                       }, 
                       {
                         type: 'text',
-                        question: 'Is this a super cool project?'
+                        question: 'Please describe the food that you consumed during this meal:'
 
                       },
                       {
                         type: 'range',
-                        question: 'Drag the thing to do the stuff based on your feelings:'
+                        question: 'How did you feel after this meal?'
                       }
           ],
           trigger: {
@@ -314,23 +379,23 @@
           }
         },
         { 
-          title: 'Survey V (Time, HH:MM, Daily, 3)',
-          desc: 'Triggered on a 10 second interval.',
+          title: 'Food Survey',
+          desc: 'Please answer the below questions about your most recent meal.',
           label: '[Health Food]',
           questions: [ 
                       {
                         type: 'radio',
-                        question: 'What is you favourite CS course?',
-                        options: ['CS91','CS21','CS97']
+                        question: 'What meal did you just eat?',
+                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
                       }, 
                       {
                         type: 'text',
-                        question: 'Is this a super cool project?'
+                        question: 'Please describe the food that you consumed during this meal:'
 
                       },
                       {
                         type: 'range',
-                        question: 'Drag the thing to do the stuff based on your feelings:'
+                        question: 'How did you feel after this meal?'
                       }
           ],
           trigger: {
