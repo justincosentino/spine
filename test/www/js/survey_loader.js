@@ -1,6 +1,7 @@
 'use strict';
 
 var SurveyLoader = function() {
+
 	this.surveys = [
         { 
             title: 'Survey I (Acceleration, Max, 9, 1)',
@@ -28,7 +29,7 @@ var SurveyLoader = function() {
               type: 'acceleration',
               thresholdType: 'max',
               threshold: 9,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -59,7 +60,7 @@ var SurveyLoader = function() {
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 0,
-              times: 1
+              occurrences: 1
             }
         },
         { 
@@ -86,33 +87,62 @@ var SurveyLoader = function() {
               type: 'acceleration',
               thresholdType: 'min',
               threshold: 12,
-              times: 'unlimited'
+              occurrences: 'unlimited'
           }
         },
         { 
-          title: 'Survey IV (Interval, 10000 ms, 10)',
-          desc: 'Triggered by shaking the device.',
+          title: 'Food Survey',
+          desc: 'Please answer the below questions about your most recent meal.',
           label: '[Health Food]',
           questions: [ 
                       {
                         type: 'radio',
-                        question: 'What is you favourite CS course?',
-                        options: ['CS91','CS21','CS97']
+                        question: 'What meal did you just eat?',
+                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
                       }, 
                       {
                         type: 'text',
-                        question: 'Is this a super cool project?'
+                        question: 'Please describe the food that you consumed during this meal:'
 
                       },
                       {
                         type: 'range',
-                        question: 'Drag the thing to do the stuff based on your feelings:'
+                        question: 'How did you feel after this meal?'
                       }
           ],
           trigger: {
               type: 'interval',
               interval: 10000,
-              times: 10
+              occurrences: 3
+          }
+        },
+        { 
+          title: 'Food Survey',
+          desc: 'Please answer the below questions about your most recent meal.',
+          label: '[Health Food]',
+          questions: [ 
+                      {
+                        type: 'radio',
+                        question: 'What meal did you just eat?',
+                        options: ['Breakfast','Lunch','Dinner','Snack','Other']
+                      }, 
+                      {
+                        type: 'text',
+                        question: 'Please describe the food that you consumed during this meal:'
+
+                      },
+                      {
+                        type: 'range',
+                        question: 'How did you feel after this meal?'
+                      }
+          ],
+          trigger: {
+              type: 'time',
+              interval: 'daily',
+              hour: 14,
+              minute: 48,
+              second: 0,
+              occurrences: 3
           }
         }
       ];

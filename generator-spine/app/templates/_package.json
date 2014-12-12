@@ -2,6 +2,8 @@
   "name": "<%= _.slugify(projectName) %>",
   "version": "0.0.0",
   "dependencies": {},
+  "description": "",
+  "private": "true",
   "devDependencies": {
     "gulp": "^3.8.7",
     "gulp-task-listing": "^0.3.0",
