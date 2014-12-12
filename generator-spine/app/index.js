@@ -2,8 +2,6 @@
 var util = require('util');
 var path = require('path');
 var yeoman = require('yeoman-generator');
-
-var phonegap = require('phonegap');
 var path = require('path');
 var fs = require('fs');
 var extfs = require('extended-fs');
@@ -11,6 +9,20 @@ var extfs = require('extended-fs');
 var SpineGenerator = module.exports = function SpineGenerator (args, options, config) {
     yeoman.generators.Base.apply(this, arguments);
     this.pkg = JSON.parse(this.readFileAsString(path.join(__dirname, '../package.json')));
+
+    this.on('end', function () {
+      this.installDependencies({
+        skipInstall: this.options['skip-install'],
+        callback: function () {
+            for (var i = 0; i < this.buildForPlatforms.length; i++) {
+                this.spawnCommand('cordova', ['platform', 'add', this.buildForPlatforms[i]]);
+            }
+            for (var i = 0; i < this.requiredPlugins.length; i++) {
+                this.spawnCommand('cordova', ['plugin', 'add', this.requiredPlugins[i]]);
+            }
+        }.bind(this) // bind the callback to the parent scope
+      });
+    });
 };
 
 util.inherits(SpineGenerator, yeoman.generators.Base);
@@ -51,6 +63,28 @@ SpineGenerator.prototype.askFor = function askFor() {
 		}
 	    ]
 	}, 
+    {
+        type: 'checkbox',
+        name: 'plugins',
+        message: 'What plugins do you need for your application?',
+        choices: [
+        {
+            name: 'Geolocation',
+            value: 'geolocation',
+            checked: true
+        }, 
+        {
+            name: 'Accelerometer',
+            value: 'accelerometer',
+            checked: true
+        }, 
+        {
+            name: 'BluetoothLE',
+            value: 'bluetoothle',
+            checked: false
+        }
+        ]
+    },
 	{
 		name: "surveyPath",
 		message: "Where is your survey file?", 
@@ -59,25 +93,41 @@ SpineGenerator.prototype.askFor = function askFor() {
     ];
     
     this.prompt(prompts, function (answers) {
-	var features = answers.features;
-	
-	this.projectName = answers.projectName;
-	this.appPackage = answers.appPackage;
-	this.surveyPath = answers.surveyPath;
-	
-	function hasFeature(feat) { return features.indexOf(feat) !== -1; }
-	
-	var builds = []
-	if(hasFeature('ios')) builds.push('\'ios\'');
-	if(hasFeature('android')) builds.push('\'android\'');
-	if(hasFeature('wp8')) builds.push('\'wp8\'');
-  		this.buildForPlatforms = "[" + builds.join(", ") + "]"; 
-	
-	done();
+    	var features = answers.features;
+    	
+    	this.projectName = answers.projectName;
+    	this.appPackage = answers.appPackage;
+    	this.surveyPath = answers.surveyPath;
+        this.plugins = answers.plugins;
+
+    	
+    	function findElem(lst, item) { return lst.indexOf(item) !== -1; }
+    	
+    	var builds = []
+    	if(findElem(features, 'ios')) builds.push('ios');
+    	if(findElem(features, 'android')) builds.push('android');
+    	if(findElem(features, 'wp8')) builds.push('wp8');
+      	this.buildForPlatforms = builds; 
+
+        var plugins = ['org.apache.cordova.dialogs']
+        if(findElem(features, 'geolocation')) {
+            plugins.push('org.apache.cordova.geolocation');
+            plugins.push('org.transistorsoft.cordova.background-geolocation');
+        }
+        if(findElem(features, 'accelerometer')) {
+            plugins.push('org.apache.cordova.device-motion');
+        }
+        if(findElem(features, 'bluetoothle')) {
+            plugins.push('com.randdusing.bluetoothle');
+        }
+    	this.requiredPlugins = plugins;
+
+    	done();
     }.bind(this));
 };
 
 SpineGenerator.prototype.packageJSON = function packageJSON() {
+    this.log.create("Writing npm package file...");
     this.template('_package.json', 'package.json');
 };
 
@@ -85,12 +135,7 @@ SpineGenerator.prototype.git = function git() {
     this.copy('gitignore', '.gitignore');
 };
 
-SpineGenerator.prototype.bower = function bower() {
-    this.copy('bowerrc', '.bowerrc');
-    this.copy('_bower.json', 'bower.json');
-};
-
-SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
+SpineGenerator.prototype.cordova = function cordova() {
     var self = this;
     self.log.create("Initialized Cordova project")
     extfs.copyDirSync(
@@ -98,13 +143,28 @@ SpineGenerator.prototype.phonegapSetup = function phonegapSetup() {
         path.resolve('.cordova'), 
         function(e) {
             self.log.create("Copied .cordova configuration") 
-        });
+        }
+    );
+    extfs.copyDirSync(
+        path.resolve(this.sourceRoot() + '/plugins'), 
+        path.resolve('plugins'), 
+        function(e) {}
+    );
+    extfs.copyDirSync(
+        path.resolve(this.sourceRoot() + '/platforms'), 
+        path.resolve('platforms'), 
+        function(e) {}
+    );
     this.template('_config.xml', 'www/config.xml');
 };
 
 SpineGenerator.prototype.gulp = function gulp() {
 	this.copy('gulpfile.js', 'gulpfile.js');
 }	
+
+SpineGenerator.prototype.readme = function readme() {
+    this.copy('README.md', 'README.md');
+}   
 
 SpineGenerator.prototype.mainStylesheet = function mainStylesheet() {
     this.copy('styles/app.css', 'www/styles/app.css');
@@ -122,10 +182,12 @@ SpineGenerator.prototype.writeIndex = function writeIndex() {
 };
 
 SpineGenerator.prototype.jsLibs = function jsLibs() {
+    this.log.create("Copying JavaScript libraries...");
 	extfs.copyDirSync(path.resolve(this.sourceRoot() +'/lib/'), path.resolve('www/lib/'));
 }
 
 SpineGenerator.prototype.surveyFile = function surveyFile() {
+    this.log.create("Copying survey file...");
 	var surveyPath = this.surveyPath;
 	this.surveyData = this.readFileAsString(this.surveyPath);
 	this.template('survey_loader.js');
@@ -133,6 +195,7 @@ SpineGenerator.prototype.surveyFile = function surveyFile() {
 }
 
 SpineGenerator.prototype.app = function app() {
+    this.log.create("Writing application files...");
     this.write('www/index.html', this.indexFile);
   	this.copy('app.js', 'www/js/app.js');
 };

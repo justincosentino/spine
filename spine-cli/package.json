@@ -1,0 +1,38 @@
+{
+  "name": "spine-cli",
+  "version": "0.1.2",
+  "description": "Spine CLI",
+  "keywords": [
+    "yeoman-generator",
+    "cordova",
+    "wp8",
+    "ios",
+    "android", 
+    "mHealth"
+  ],
+  "homepage": "https://github.com/justincosentino/spine",
+  "bugs": "https://github.com/justincosentino/spine/issues",
+  "main": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/justincosentino/spine.git"
+  },
+  "dependencies": {
+    "yo": ">=1.1.2",
+    "cordova": "4.1.2",
+    "extended-fs": "~0.3.1",
+    "yeoman-generator": "^0.13.4"
+  },
+  "peerDependencies": {
+    "yo": ">=1.1.2"
+  },
+  "engines": {
+    "node": ">=0.8.0",
+    "npm": ">=1.2.10"
+  },
+  "licenses": [
+    {
+      "type": "BSD"
+    }
+  ]
+}
