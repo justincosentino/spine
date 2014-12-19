@@ -4,15 +4,24 @@ import argparse
 from clint.textui import colored, indent, puts
 import os
 
+'''
+spine generate 			- generate a new application
+spine add <platform> 	- add a new supported platform
+spine build <platform> 	- build for a platform
+spine run <platform> 	- run the application on the given platform
+spine emulate <platform> 	- run the application on the given platform
+'''
+
+
+
+
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='SPINE: A Cross-Platform Framework for Mobile Health Application Development.' )
 	subparsers = parser.add_subparsers(dest='subcommand', help='general spine usage')
 
 	# create the parser for the "generate" command
-	parser_gen = subparsers.add_parser('generate', help='scaffold an application using the given generator')
-	# parser_gen.add_argument('name', metavar='<name>', type=str, action='store', default='newSpineApp', help='the name of the new application')
-	# parser_gen.add_argument('generate', metavar='<generator>', type=str, action='store', default='spine', help='the spine generator')
+	parser_gen = subparsers.add_parser('generate', help='scaffold an Spine application')
 
 	# create the parser for the "build" command
 	parser_build = subparsers.add_parser('build', help='build the given spine application for the specified environment(s)')
@@ -22,6 +31,15 @@ if __name__ == '__main__':
 	parser_add = subparsers.add_parser('add', help='add the given mobile environment')
 	parser_add.add_argument('environment', metavar='<environment>', type=str, action='store', choices=['ios', 'android'], help='desired environment')
 
+	# create the parser for the "run" command
+	parser_run = subparsers.add_parser('run', help='run the application in the given mobile environment')
+	parser_run.add_argument('environment', metavar='<environment>', type=str, action='store', choices=['ios', 'android'], help='desired environment')
+
+	# create the parser for the "emulate" command
+	parser_emulate = subparsers.add_parser('emulate', help='emulate the application in the given mobile environment')
+	parser_emulate.add_argument('environment', metavar='<environment>', type=str, action='store', choices=['ios', 'android'], help='desired environment')
+
+
 	args = parser.parse_args()
 
 	if args.subcommand == 'generate':
@@ -29,13 +47,20 @@ if __name__ == '__main__':
 		res = os.system(cmd)
 		os.system('sudo npm install')
 
-	elif args.subcommand == 'add':		
-		cmd = 'phonegap platform add %s' % ( args.environment )
+	elif args.subcommand == 'add':	
+		cmd = 'cordova platform add %s' % ( args.environment )
 		os.system(cmd)
 		
 	elif args.subcommand == 'build':
-		cmd = 'grunt platform-build'
+		cmd = 'cordova build %s' % ( args.environment )
 		os.system(cmd)
 
-	# TODO: Print out some fancy ish
+	elif args.subcommand == 'run':
+		cmd = 'cordova run %s' % ( args.environment )
+		os.system(cmd)
+
+	elif args.subcommand == 'emulate':
+		cmd = 'cordova emulate %s' % ( args.environment )
+		os.system(cmd)
+
 

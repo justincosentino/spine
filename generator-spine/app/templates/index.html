@@ -82,7 +82,7 @@
       </ons-toolbar>
 
       <ons-list ng-controller="MasterController">
-        <ons-list-item modifier="chevron" class="item" ng-repeat="item in items" ng-click="showDetail($index)">
+        <ons-list-item modifier="chevron" class="item" ng-repeat="item in items track by $index" ng-click="showDetail($index)">
           <ons-row>
             <ons-col width="60px"> 
               <div class="item-thum"></div>
@@ -178,8 +178,13 @@
           </p>
         </ons-list-item>
       </ons-list>
-
       <br>
+
+      <div style="padding: 10px 9px">
+        <ons-button modifier="large" style="margin: 0 auto;" ng-click="submit()">
+          Send
+        </ons-button>
+      </div>
 
     </ons-page>
   </ons-template>
