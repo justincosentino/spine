@@ -88,7 +88,7 @@ SpineGenerator.prototype.askFor = function askFor() {
 	{
 		name: "surveyPath",
 		message: "Where is your survey file?", 
-        default: '/Users/callen/surveys.json'
+        default: '~/survey.json'
 	}
     ];
     
