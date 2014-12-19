@@ -38,9 +38,19 @@ SpineGenerator.prototype.askFor = function askFor() {
 	},
 	{ 
 	    name: 'appPackage',
-	    message: 'What is your application package',
+	    message: 'What is your application package?',
 	    default: 'com.spine.helloworld'
 	},
+    { 
+        name: 'teamName',
+        message: 'What is your team name?',
+        default: 'spineTeam'
+    },
+    { 
+        name: 'contactEmail',
+        message: 'What is your contact email?',
+        default: 'team@spine.com'
+    },
 	{
 	    type: 'checkbox',
 	    name: 'features',
@@ -99,6 +109,8 @@ SpineGenerator.prototype.askFor = function askFor() {
     	this.appPackage = answers.appPackage;
     	this.surveyPath = answers.surveyPath;
         this.plugins = answers.plugins;
+        this.teamName = answers.teamName;
+        this.contactEmail = answers.contactEmail;
 
     	
     	function findElem(lst, item) { return lst.indexOf(item) !== -1; }
