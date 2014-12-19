@@ -374,6 +374,8 @@
         var index = surveys.toDisplay.indexOf(currentSurvey);
         surveys.toDisplay.splice(index,1);
         console.log(surveys.toDisplay);
+        var store = new DataStore();
+        store.write(currentSurvey);
       }
 
       // Surveys that have been loaded by the application. This info will be 
