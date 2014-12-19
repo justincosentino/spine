@@ -25,7 +25,11 @@ DataStore.prototype.write = function write(file) {
             var blob = new Blob(file, {type:'text/plain'});
             fileWriter.write(blob);
             console.log("Successfully wrote file");
-        }, fail);
+        }, writeError);
+    }
+
+    function writeError() {
+        console.log("Failed to write file");
     }
 };
 
