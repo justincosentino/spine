@@ -3,7 +3,6 @@
   "version": "0.1.2",
   "description": "Spine CLI",
   "keywords": [
-    "yeoman-generator",
     "cordova",
     "wp8",
     "ios",
